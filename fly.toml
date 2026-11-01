@@ -1,0 +1,30 @@
+# Fly.io config — deploys with SQLite on a persistent volume.
+# Setup:
+#   flyctl auth login
+#   flyctl launch --no-deploy
+#   flyctl volumes create mathquest_data --region iad
+#   flyctl deploy
+#
+# After first deploy, run the seed:
+#   flyctl ssh console --command "bun run prisma/seed.ts"
+
+app = "mathquest"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  DATABASE_URL = "file:/data/mathquest.db"
+
+[mount]
+  source = "mathquest_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
