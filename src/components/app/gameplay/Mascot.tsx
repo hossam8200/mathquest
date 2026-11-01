@@ -1,14 +1,15 @@
 'use client'
 
-// The mascot: shows the currently-equipped character (or a default emoji)
+// The mascot: shows the currently-equipped character (or a default fox)
 // and reacts to gameplay events. Reads reaction from the app store.
-// In Phase 4 this will render the actual equipped character SVG; for now
-// it uses the default emoji mascot.
+// In Phase 4 this renders the equipped character's emoji from the marketplace.
 
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { useCurrentUser } from '@/hooks/use-current-user'
+import { useQuery } from '@tanstack/react-query'
+import type { CharacterInfo } from '@/types'
 
 export function Mascot({ size = 80 }: { size?: number }) {
   const reaction = useAppStore((s) => s.mascotReaction)
@@ -16,6 +17,20 @@ export function Mascot({ size = 80 }: { size?: number }) {
   const lang = useSettingsStore((s) => s.lang)
   const { user } = useCurrentUser()
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Fetch the equipped character's art (if any). This is cached by React Query.
+  const { data: equippedChar } = useQuery<{ characters: CharacterInfo[] }>({
+    queryKey: ['marketplace'],
+    queryFn: async () => {
+      const r = await fetch('/api/marketplace/list', { cache: 'no-store' })
+      if (!r.ok) return { characters: [] }
+      return r.json()
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  })
+  const char = equippedChar?.characters.find((c) => c.id === user?.avatarCharacterId)
+  const baseEmoji = char?.artPayload ?? '🦊'
 
   // Auto-clear temporary reactions back to idle.
   useEffect(() => {
@@ -32,7 +47,7 @@ export function Mascot({ size = 80 }: { size?: number }) {
     reaction === 'cheer'     ? '😊' :
     reaction === 'sad'       ? '😟' :
     reaction === 'thinking'  ? '🤔' :
-    '🦊'
+    baseEmoji
 
   const cls =
     reaction === 'celebrate' ? 'mq-celebrate' :
@@ -47,7 +62,7 @@ export function Mascot({ size = 80 }: { size?: number }) {
     reaction === 'cheer'     ? (lang === 'ar' ? 'أحسنت!' : 'Nice!') :
     reaction === 'sad'       ? (lang === 'ar' ? 'لا بأس، حاول مجددًا' : 'Almost! Try again') :
     reaction === 'thinking'  ? (lang === 'ar' ? 'هممم...' : 'Hmm...') :
-    (lang === 'ar' ? 'هيا نتعلم!' : "Let's learn!")
+    ''
 
   return (
     <div className="flex items-end gap-2" aria-live="polite">
@@ -55,7 +70,7 @@ export function Mascot({ size = 80 }: { size?: number }) {
         className={cls}
         style={{ fontSize: size, lineHeight: 1, userSelect: 'none' }}
         role="img"
-        aria-label={emoji}
+        aria-label={char?.name ?? 'Mascot'}
       >
         {emoji}
       </div>

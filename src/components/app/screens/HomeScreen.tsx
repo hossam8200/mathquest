@@ -1,9 +1,10 @@
 'use client'
 
 // Home screen: greeting, big "Play" CTA, quick stats, operation picker.
-// Will be wired to worlds+gameplay in Phase 2.
+// Stats are fetched from /api/progress/stats.
 
 import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '@/store/app-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -12,8 +13,8 @@ import { t, type DictKey } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Mascot } from '../gameplay/Mascot'
-import { Coins, Flame, Star, Trophy } from 'lucide-react'
-import type { Operation } from '@/types'
+import { Coins, Flame, Zap, Map as MapIcon } from 'lucide-react'
+import type { Operation, ProgressStats } from '@/types'
 import { cn } from '@/lib/utils'
 
 const OPS: { key: Operation; emoji: string; color: string; labelKey: DictKey }[] = [
@@ -31,6 +32,17 @@ export function HomeScreen() {
   const lang = useSettingsStore((s) => s.lang)
   const hydrate = useSettingsStore((s) => s.hydrateFromUser)
   const sfx = useSound()
+
+  const statsQ = useQuery<{ stats: ProgressStats }>({
+    queryKey: ['stats'],
+    queryFn: async () => {
+      const r = await fetch('/api/progress/stats', { cache: 'no-store' })
+      if (!r.ok) throw new Error()
+      return r.json()
+    },
+    enabled: !!user,
+  })
+  const stats = statsQ.data?.stats
 
   // Sync client settings from the server profile (handles dark mode/lang/text scale).
   useEffect(() => {
@@ -70,8 +82,8 @@ export function HomeScreen() {
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard icon={<Coins className="h-5 w-5" />} label={t(lang, 'coins')} value={user.coins} color="text-yellow-600" />
         <StatCard icon={<Flame className="h-5 w-5" />} label={t(lang, 'streak')} value={user.loginStreak} color="text-orange-600" />
-        <StatCard icon={<Star className="h-5 w-5" />} label={t(lang, 'points')} value={0} color="text-amber-600" />
-        <StatCard icon={<Trophy className="h-5 w-5" />} label={t(lang, 'levels')} value={0} color="text-emerald-600" />
+        <StatCard icon={<Zap className="h-5 w-5" />} label={t(lang, 'points')} value={stats?.totalPoints ?? 0} color="text-amber-600" />
+        <StatCard icon={<MapIcon className="h-5 w-5" />} label={lang === 'ar' ? 'مستويات' : 'Levels'} value={stats?.levelsCompleted ?? 0} color="text-emerald-600" />
       </div>
 
       {/* Big play CTA */}

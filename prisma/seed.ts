@@ -159,7 +159,160 @@ async function main() {
   }
   console.log(`  ✓ ${BADGES.length} badges`)
 
+  // ── Built-in decks + cards ──
+  // 15+ decks covering all 4 operations × 3 age bands + special decks.
+  const BANDS = ['8-10', '11-13', '14-16'] as const
+  const OPS = [
+    { op: 'addition',       label: 'Addition Facts',     icon: '➕' },
+    { op: 'subtraction',    label: 'Subtraction Facts',  icon: '➖' },
+    { op: 'multiplication', label: 'Times Tables',       icon: '✖️' },
+    { op: 'division',       label: 'Division Facts',     icon: '➗' },
+  ] as const
+
+  let deckCount = 0
+  let cardCount = 0
+  for (const band of BANDS) {
+    for (const { op, label, icon } of OPS) {
+      const title = `${label} ${band}`
+      const deck = await db.deck.upsert({
+        where: { id: `builtin-${op}-${band}` },
+        update: { title, description: `${label} for ages ${band}`, coverIcon: icon, operation: op, ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
+        create: { id: `builtin-${op}-${band}`, title, description: `${label} for ages ${band}`, coverIcon: icon, operation: op, ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
+      })
+      // Generate ~30 unique cards
+      const cards = generateCardsFor(op, band, 30)
+      // Wipe existing cards then recreate (idempotent)
+      await db.card.deleteMany({ where: { deckId: deck.id } })
+      for (let i = 0; i < cards.length; i++) {
+        await db.card.create({
+          data: {
+            deckId: deck.id,
+            front: cards[i].front,
+            back: cards[i].back,
+            hint: cards[i].hint ?? null,
+            explanation: cards[i].explanation ?? null,
+            sortOrder: i,
+          },
+        })
+        cardCount++
+      }
+      deckCount++
+    }
+  }
+
+  // Special decks: Mixed Operations (one per band) + Squares + Times Tables 6-9
+  for (const band of BANDS) {
+    const title = `Mixed Operations ${band}`
+    const deck = await db.deck.upsert({
+      where: { id: `builtin-mixed-${band}` },
+      update: { title, description: `Mixed math for ages ${band}`, coverIcon: '🎲', operation: 'mixed', ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
+      create: { id: `builtin-mixed-${band}`, title, description: `Mixed math for ages ${band}`, coverIcon: '🎲', operation: 'mixed', ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
+    })
+    const cards = generateCardsFor('mixed', band, 30)
+    await db.card.deleteMany({ where: { deckId: deck.id } })
+    for (let i = 0; i < cards.length; i++) {
+      await db.card.create({
+        data: { deckId: deck.id, front: cards[i].front, back: cards[i].back, hint: cards[i].hint ?? null, explanation: cards[i].explanation ?? null, sortOrder: i },
+      })
+      cardCount++
+    }
+    deckCount++
+  }
+
+  // Squares & Roots
+  const sqDeck = await db.deck.upsert({
+    where: { id: 'builtin-squares' },
+    update: { title: 'Squares & Roots', description: 'Perfect squares and their roots', coverIcon: '🟦', operation: 'multiplication', ageBand: '11-13', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-squares', title: 'Squares & Roots', description: 'Perfect squares and their roots', coverIcon: '🟦', operation: 'multiplication', ageBand: '11-13', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: sqDeck.id } })
+  for (let i = 1; i <= 20; i++) {
+    await db.card.create({
+      data: { deckId: sqDeck.id, front: `${i}²`, back: String(i * i), hint: 'Square the number', explanation: `${i} × ${i} = ${i * i}`, sortOrder: i - 1 },
+    })
+    cardCount++
+  }
+  deckCount++
+
+  // Times Tables 6-9 (key facts kids forget)
+  const ttDeck = await db.deck.upsert({
+    where: { id: 'builtin-times-6-9' },
+    update: { title: 'Times Tables 6-9', description: 'Master the tricky 6-9 times tables', coverIcon: '✖️', operation: 'multiplication', ageBand: '8-10', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-times-6-9', title: 'Times Tables 6-9', description: 'Master the tricky 6-9 times tables', coverIcon: '✖️', operation: 'multiplication', ageBand: '8-10', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: ttDeck.id } })
+  let ttIdx = 0
+  for (const a of [6, 7, 8, 9]) {
+    for (const b of [6, 7, 8, 9, 12]) {
+      await db.card.create({
+        data: { deckId: ttDeck.id, front: `${a} × ${b}`, back: String(a * b), hint: undefined, explanation: undefined, sortOrder: ttIdx++ },
+      })
+      cardCount++
+    }
+  }
+  deckCount++
+
+  console.log(`  ✓ ${deckCount} built-in decks, ${cardCount} cards`)
+
   console.log('🌱 Seed complete!')
+}
+
+// ── Card generator ──
+function generateCardsFor(op: string, band: string, count: number): { front: string; back: string; hint?: string; explanation?: string }[] {
+  const cards: { front: string; back: string; hint?: string; explanation?: string }[] = []
+  const seen = new Set<string>()
+  const difficulty = 5
+  let guard = 0
+  while (cards.length < count && guard < count * 10) {
+    guard++
+    // Use the math-engine to generate a question
+    const q = generateQuestionLocal(op, band, difficulty)
+    if (seen.has(q.front)) continue
+    seen.add(q.front)
+    cards.push(q)
+  }
+  return cards
+}
+
+// Local question generator (mirrors math-engine but returns front/back format)
+function generateQuestionLocal(op: string, band: string, difficulty: number): { front: string; back: string; hint?: string; explanation?: string } {
+  const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
+  const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
+  const sym = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' } as Record<string, string>
+
+  let a: number, b: number, ans: number
+  if (band === '8-10') {
+    if (op === 'addition') { a = randInt(2, 20 + difficulty * 5); b = randInt(2, 20 + difficulty * 5); ans = a + b }
+    else if (op === 'subtraction') { a = randInt(10, 50); b = randInt(1, a - 1); ans = a - b }
+    else if (op === 'multiplication') { a = randInt(2, Math.min(12, 5 + difficulty)); b = randInt(2, Math.min(12, 5 + difficulty)); ans = a * b }
+    else if (op === 'division') { b = randInt(2, 10); ans = randInt(2, 10); a = b * ans }
+    else { // mixed
+      const ops = ['addition', 'subtraction', 'multiplication', 'division']
+      return generateQuestionLocal(pick(ops), band, difficulty)
+    }
+  } else if (band === '11-13') {
+    if (op === 'addition') { a = randInt(10, 200); b = randInt(10, 200); ans = a + b }
+    else if (op === 'subtraction') { a = randInt(50, 300); b = randInt(10, a - 1); ans = a - b }
+    else if (op === 'multiplication') { a = randInt(6, 15); b = randInt(6, 15); ans = a * b }
+    else if (op === 'division') { b = randInt(2, 12); ans = randInt(3, 15); a = b * ans }
+    else {
+      const ops = ['addition', 'subtraction', 'multiplication', 'division']
+      return generateQuestionLocal(pick(ops), band, difficulty)
+    }
+  } else { // 14-16
+    if (op === 'addition') { a = randInt(100, 999); b = randInt(100, 999); ans = a + b }
+    else if (op === 'subtraction') { a = randInt(100, 999); b = randInt(100, a - 10); ans = a - b }
+    else if (op === 'multiplication') { a = randInt(12, 25); b = randInt(2, 15); ans = a * b }
+    else if (op === 'division') { b = randInt(3, 15); ans = randInt(5, 30); a = b * ans }
+    else {
+      const ops = ['addition', 'subtraction', 'multiplication', 'division']
+      return generateQuestionLocal(pick(ops), band, difficulty)
+    }
+  }
+  return {
+    front: `${a} ${sym[op] ?? '+'} ${b}`,
+    back: String(ans),
+  }
 }
 
 main()

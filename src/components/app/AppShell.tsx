@@ -13,7 +13,16 @@ import { HomeScreen } from './screens/HomeScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { WorldMapScreen } from './screens/WorldMapScreen'
 import { GameplayScreen } from './screens/GameplayScreen'
-import { ComingSoon } from './screens/ComingSoon'
+import { DailyChallengeScreen } from './screens/DailyChallengeScreen'
+import { MarketplaceScreen } from './screens/MarketplaceScreen'
+import { CollectionScreen } from './screens/CollectionScreen'
+import { DecksScreen } from './screens/DecksScreen'
+import { FlashcardLearnScreen } from './screens/FlashcardLearnScreen'
+import { MatchGameScreen } from './screens/MatchGameScreen'
+import { ProgressScreen } from './screens/ProgressScreen'
+import { LeaderboardScreen } from './screens/LeaderboardScreen'
+import { ParentDashboardScreen } from './screens/ParentDashboardScreen'
+import { AdminPanelScreen } from './screens/AdminPanelScreen'
 import type { ViewKey } from '@/types'
 
 export function AppShell() {
@@ -57,21 +66,20 @@ export function AppShell() {
 
 function renderView(view: ViewKey): React.ReactNode {
   switch (view) {
-    case 'home':         return <HomeScreen />
-    case 'worlds':       return <WorldMapScreen />
-    case 'gameplay':     return <GameplayScreen />
-    case 'settings':     return <SettingsScreen />
-    // These screens are built in later phases; show informative placeholder.
-    case 'marketplace':  return <ComingSoon view="marketplace" phase="P4" />
-    case 'collection':   return <ComingSoon view="collection" phase="P4" />
-    case 'decks':        return <ComingSoon view="decks" phase="P5" />
-    case 'flashcard-learn': return <ComingSoon view="flashcard-learn" phase="P5" />
-    case 'match-game':   return <ComingSoon view="match-game" phase="P5" />
-    case 'progress':     return <ComingSoon view="progress" phase="P5" />
-    case 'leaderboard':  return <ComingSoon view="leaderboard" phase="P5" />
-    case 'daily':        return <ComingSoon view="daily" phase="P3" />
-    case 'parent':       return <ComingSoon view="parent" phase="P6" />
-    case 'admin':        return <ComingSoon view="admin" phase="P6" />
-    default:             return <HomeScreen />
+    case 'home':              return <HomeScreen />
+    case 'worlds':            return <WorldMapScreen />
+    case 'gameplay':          return <GameplayScreen />
+    case 'settings':          return <SettingsScreen />
+    case 'daily':             return <DailyChallengeScreen />
+    case 'marketplace':       return <MarketplaceScreen />
+    case 'collection':        return <CollectionScreen />
+    case 'decks':             return <DecksScreen />
+    case 'flashcard-learn':   return <FlashcardLearnScreen />
+    case 'match-game':        return <MatchGameScreen />
+    case 'progress':          return <ProgressScreen />
+    case 'leaderboard':       return <LeaderboardScreen />
+    case 'parent':            return <ParentDashboardScreen />
+    case 'admin':             return <AdminPanelScreen />
+    default:                  return <HomeScreen />
   }
 }

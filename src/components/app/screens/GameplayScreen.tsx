@@ -6,6 +6,7 @@
 // dialog.
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '@/store/app-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -17,13 +18,14 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ChevronLeft, Clock, Flame, Check, X } from 'lucide-react'
 import type { Question } from '@/lib/math-engine'
+import type { CharacterInfo } from '@/types'
 import { Mascot } from '../gameplay/Mascot'
 import { FeedbackBurst, type Feedback } from '../gameplay/FeedbackBurst'
 import { LevelCompleteDialog, type LevelCompleteData } from '../gameplay/LevelCompleteDialog'
 import { cn } from '@/lib/utils'
 
-const TIME_PER_QUESTION = 15 // seconds
-const TIME_BONUS_PER_PERK_SECOND = 1 // character perk adds this many seconds
+const TIME_PER_QUESTION = 15 // base seconds per question
+// Character "time" perk adds this many seconds on top.
 
 interface LevelMeta {
   id: string
@@ -58,6 +60,11 @@ export function GameplayScreen() {
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
   const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION)
+
+  // Equipped character perk (extra time). Fetched once, cached by React Query.
+  const perkSeconds = useEquippedPerkSeconds()
+  const effectiveTimeRef = useRef(TIME_PER_QUESTION)
+  effectiveTimeRef.current = TIME_PER_QUESTION + perkSeconds
   const [complete, setComplete] = useState<LevelCompleteData | null>(null)
 
   const questionStartRef = useRef<number>(Date.now())
@@ -101,7 +108,7 @@ export function GameplayScreen() {
         setLevel(data.level)
         setQuestions(data.questions)
         setAttemptId(data.attemptId)
-        setTimeLeft(TIME_PER_QUESTION)
+        setTimeLeft(effectiveTimeRef.current)
         questionStartRef.current = Date.now()
       } finally {
         if (!cancelled) setLoading(false)
@@ -190,7 +197,7 @@ export function GameplayScreen() {
     setSelectedOption(null)
     setFeedback(null)
     answeredRef.current = false
-    setTimeLeft(TIME_PER_QUESTION)
+    setTimeLeft(effectiveTimeRef.current)
     questionStartRef.current = Date.now()
   }
 
@@ -376,4 +383,22 @@ export function GameplayScreen() {
       <LevelCompleteDialog data={complete} onPlayAgain={playAgain} onBackToMap={backToMap} />
     </div>
   )
+}
+
+// Fetches the equipped character's time perk (seconds added to timer).
+function useEquippedPerkSeconds(): number {
+  const { user } = useCurrentUser()
+  const { data } = useQuery<{ characters: CharacterInfo[] }>({
+    queryKey: ['marketplace'],
+    queryFn: async () => {
+      const r = await fetch('/api/marketplace/list', { cache: 'no-store' })
+      if (!r.ok) return { characters: [] }
+      return r.json()
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  })
+  const char = data?.characters.find((c) => c.id === user?.avatarCharacterId)
+  if (char?.perkType === 'time' && char.perkValue) return char.perkValue
+  return 0
 }
