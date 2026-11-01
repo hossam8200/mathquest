@@ -4,13 +4,21 @@
 // equipped avatar reactions, and a small global event bus for toasts.
 
 import { create } from 'zustand'
-import type { ViewKey, Operation, AgeBand } from '@/types'
+import type { ViewKey, Operation } from '@/types'
+
+export type GameplayMode = 'mcq' | 'typed'
 
 export interface NavTarget {
   view: ViewKey
   worldKey?: Operation
   levelId?: string
   deckId?: string
+}
+
+export interface GameplayConfig {
+  levelId: string
+  mode: GameplayMode
+  timerEnabled: boolean
 }
 
 interface AppState {
@@ -23,6 +31,10 @@ interface AppState {
   selectedOp: Operation
   selectedLevelId: string | null
   selectedWorldKey: Operation | null
+
+  // When set, GameplayScreen reads this and starts a round
+  gameplayConfig: GameplayConfig | null
+  setGameplayConfig: (cfg: GameplayConfig | null) => void
 
   // Decks
   selectedDeckId: string | null
@@ -53,6 +65,9 @@ export const useAppStore = create<AppState>((set) => ({
   selectedOp: 'addition',
   selectedLevelId: null,
   selectedWorldKey: null,
+
+  gameplayConfig: null,
+  setGameplayConfig: (cfg) => set({ gameplayConfig: cfg }),
 
   selectedDeckId: null,
 

@@ -49,6 +49,7 @@ model User {
   assignedDecks     Deck[]   @relation("AssignedDecks")
   childrenAccounts  User[]   @relation("ParentChildren")
   parentAccount     User?    @relation("ParentChildren", fields: [parentId], references: [id])
+  attempts          RoundAttempt[]
 
   @@index([parentId])
 }
@@ -78,13 +79,14 @@ model Level {
   id              String   @id @default(cuid())
   worldId         String
   levelNumber     Int // 1..30
-  ageBand         String // 8-10 | 11-13 | 14-16
-  difficulty      Int // 1..10 internal
+  difficulty      Int // 1..10 internal — interpreted per user age band at play time
   title           String
   isBoss          Boolean  @default(false)
+  questionCount   Int      @default(10) // 10 normal, 15 boss
   unlockThreshold Int      @default(70) // percent to unlock next
   world           World    @relation(fields: [worldId], references: [id])
   roundResults    RoundResult[]
+  attempts        RoundAttempt[]
 
   @@unique([worldId, levelNumber])
   @@index([worldId])
@@ -322,6 +324,21 @@ model Transaction {
   refId     String?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Pending round — server stores generated questions here so submit-round
+// can re-validate answers without trusting the client. 1-hour TTL.
+model RoundAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  levelId    String
+  questions  String   // JSON array of Question
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level      Level    @relation(fields: [levelId], references: [id])
 
   @@index([userId])
 }

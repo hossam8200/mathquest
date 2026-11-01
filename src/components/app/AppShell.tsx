@@ -11,6 +11,8 @@ import { Sidebar } from './common/Sidebar'
 import { AuthScreen } from './screens/AuthScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
+import { WorldMapScreen } from './screens/WorldMapScreen'
+import { GameplayScreen } from './screens/GameplayScreen'
 import { ComingSoon } from './screens/ComingSoon'
 import type { ViewKey } from '@/types'
 
@@ -56,10 +58,10 @@ export function AppShell() {
 function renderView(view: ViewKey): React.ReactNode {
   switch (view) {
     case 'home':         return <HomeScreen />
+    case 'worlds':       return <WorldMapScreen />
+    case 'gameplay':     return <GameplayScreen />
     case 'settings':     return <SettingsScreen />
     // These screens are built in later phases; show informative placeholder.
-    case 'worlds':       return <ComingSoon view="worlds" phase="P2" />
-    case 'gameplay':     return <ComingSoon view="gameplay" phase="P2" />
     case 'marketplace':  return <ComingSoon view="marketplace" phase="P4" />
     case 'collection':   return <ComingSoon view="collection" phase="P4" />
     case 'decks':        return <ComingSoon view="decks" phase="P5" />

@@ -53,10 +53,10 @@ export interface LevelInfo {
   id: string
   worldId: string
   levelNumber: number
-  ageBand: AgeBand
   difficulty: number
   title: string
   isBoss: boolean
+  questionCount: number
   unlockThreshold: number
   bestStars?: number
   bestPercent?: number
