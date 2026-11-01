@@ -1,6 +1,4 @@
 {
-  "buildCommand": "bun run build",
-  "startCommand": "bun run start",
   "framework": "nextjs",
   "regions": ["iad1"]
 }
