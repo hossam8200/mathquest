@@ -51,7 +51,7 @@ export function ParentDashboardScreen() {
     },
   })
 
-  if (!user?.parentPin) {
+  if (!user?.hasParentPin) {
     return (
       <div className="mx-auto max-w-md px-4 py-10 text-center">
         <Lock className="mx-auto h-12 w-12 text-muted-foreground" />

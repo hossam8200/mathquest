@@ -8,7 +8,7 @@ import { useSettingsStore } from '@/store/settings-store'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useSound } from '@/hooks/use-sound'
 import { Button } from '@/components/ui/button'
-import { Coins, Flame, Volume2, VolumeX, Moon, Sun, LogOut, Settings as SettingsIcon } from 'lucide-react'
+import { Coins, Flame, Volume2, VolumeX, Moon, Sun, LogOut, Settings as SettingsIcon, BookOpen } from 'lucide-react'
 import { t } from '@/lib/i18n'
 
 export function Header() {
@@ -47,6 +47,18 @@ export function Header() {
       </button>
 
       <div className="ml-auto flex items-center gap-1 md:gap-2">
+        {/* Guide — visible to all logged-in users */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden sm:flex gap-1"
+          aria-label={lang === 'ar' ? 'الدليل' : 'Guide'}
+          onClick={() => go({ view: 'guide' })}
+        >
+          <BookOpen className="h-4 w-4" />
+          <span className="hidden md:inline">{lang === 'ar' ? 'الدليل' : 'Guide'}</span>
+        </Button>
+
         {/* Streak */}
         <div className="hidden sm:flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-sm font-bold text-amber-700 dark:text-amber-300">
           <Flame className="h-4 w-4" />

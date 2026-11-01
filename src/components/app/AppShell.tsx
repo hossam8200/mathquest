@@ -23,6 +23,7 @@ import { ProgressScreen } from './screens/ProgressScreen'
 import { LeaderboardScreen } from './screens/LeaderboardScreen'
 import { ParentDashboardScreen } from './screens/ParentDashboardScreen'
 import { AdminPanelScreen } from './screens/AdminPanelScreen'
+import { GuideScreen } from './screens/GuideScreen'
 import type { ViewKey } from '@/types'
 
 export function AppShell() {
@@ -45,6 +46,9 @@ export function AppShell() {
       </div>
     )
   }
+
+  // Guide is accessible even without a logged-in user.
+  if (!user && view === 'guide') return <GuideScreen />
 
   if (!user) return <AuthScreen />
 
@@ -80,6 +84,7 @@ function renderView(view: ViewKey): React.ReactNode {
     case 'leaderboard':       return <LeaderboardScreen />
     case 'parent':            return <ParentDashboardScreen />
     case 'admin':             return <AdminPanelScreen />
+    case 'guide':             return <GuideScreen />
     default:                  return <HomeScreen />
   }
 }

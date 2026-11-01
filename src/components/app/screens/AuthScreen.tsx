@@ -4,6 +4,7 @@
 // On success, reloads so /api/auth/me returns the new user.
 
 import { useState } from 'react'
+import { useAppStore } from '@/store/app-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { useSound } from '@/hooks/use-sound'
 import { t } from '@/lib/i18n'
@@ -254,6 +255,12 @@ export function AuthScreen() {
         <p className="mt-4 text-center text-[11px] text-muted-foreground">
           {t(lang, 'madeForKids')}
         </p>
+        <button
+          onClick={() => useAppStore.getState().go({ view: 'guide' })}
+          className="mt-3 text-xs font-medium text-primary hover:underline"
+        >
+          📖 {lang === 'ar' ? 'عرض الدليل الكامل' : 'View full guide'}
+        </button>
       </div>
     </div>
   )

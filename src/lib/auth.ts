@@ -59,10 +59,13 @@ export async function requireRole(role: string): Promise<User> {
   return u
 }
 
-// Public user shape (no passwordHash) — safe to send to client.
-export type PublicUser = Omit<User, 'passwordHash' | 'parentPin'>
+// Public user shape (no passwordHash/parentPin) — safe to send to client.
+// Includes a boolean flag for whether a parent PIN is set (not the PIN itself).
+export type PublicUser = Omit<User, 'passwordHash' | 'parentPin'> & {
+  hasParentPin: boolean
+}
 
 export function toPublicUser(u: User): PublicUser {
   const { passwordHash, parentPin, ...rest } = u
-  return rest
+  return { ...rest, hasParentPin: !!parentPin }
 }

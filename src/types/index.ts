@@ -20,6 +20,7 @@ export type ViewKey =
   | 'parent'
   | 'admin'
   | 'settings'
+  | 'guide'
 
 export interface PublicUser {
   id: string
@@ -27,6 +28,7 @@ export interface PublicUser {
   role: 'child' | 'parent' | 'admin'
   ageBand: AgeBand | null
   parentEmail: string | null
+  hasParentPin: boolean
   avatarCharacterId: string | null
   coins: number
   soundEnabled: boolean
