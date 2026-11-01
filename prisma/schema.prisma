@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// MathQuest — Prisma schema
+// SQLite for development; PostgreSQL-ready (only the datasource provider changes).
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +10,318 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ───────────── Accounts & auth ─────────────
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  nickname           String    @unique
+  passwordHash       String? // null for guest until migrated
+  role               String    @default("child") // child | parent | admin
+  ageBand            String? // 8-10 | 11-13 | 14-16
+  parentEmail        String?
+  parentPin          String? // hashed, gates parent dashboard
+  avatarCharacterId  String?
+  coins              Int       @default(0)
+  soundEnabled       Boolean   @default(true)
+  darkMode           Boolean   @default(false)
+  language           String    @default("en") // en | ar
+  textScale          String    @default("md") // sm | md | lg
+  dailyTimeLimitMins Int       @default(60)
+  dailyCardGoal      Int       @default(20)
+  lastLoginDate      DateTime?
+  loginStreak        Int       @default(0)
+  longestLoginStreak Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  parentId           String?
+
+  sessions          Session[]
+  roundResults      RoundResult[]
+  questionResults   QuestionResult[]
+  purchases         Purchase[]
+  ownedDecks        UserDeck[]
+  cardProgress      CardProgress[]
+  studySessions     StudySession[]
+  matchScores       MatchScore[]
+  streaks           Streak[]
+  badges            UserBadge[]
+  transactions      Transaction[]
+  dailyProgress     UserDailyProgress[]
+  assignedDecks     Deck[]   @relation("AssignedDecks")
+  childrenAccounts  User[]   @relation("ParentChildren")
+  parentAccount     User?    @relation("ParentChildren", fields: [parentId], references: [id])
+
+  @@index([parentId])
 }
 
-model Post {
+model Session {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ───────────── Levels & gameplay ─────────────
+model World {
+  id        String  @id @default(cuid())
+  key       String  @unique // addition | subtraction | multiplication | division | mixed
+  name      String
+  emoji     String
+  sortOrder Int
+  levels    Level[]
+}
+
+model Level {
+  id              String   @id @default(cuid())
+  worldId         String
+  levelNumber     Int // 1..30
+  ageBand         String // 8-10 | 11-13 | 14-16
+  difficulty      Int // 1..10 internal
+  title           String
+  isBoss          Boolean  @default(false)
+  unlockThreshold Int      @default(70) // percent to unlock next
+  world           World    @relation(fields: [worldId], references: [id])
+  roundResults    RoundResult[]
+
+  @@unique([worldId, levelNumber])
+  @@index([worldId])
+}
+
+model RoundResult { // one per level attempt
+  id           String   @id @default(cuid())
+  userId       String
+  levelId      String
+  score        Int // 0..100 percent
+  stars        Int // 0..3
+  correctCount Int
+  totalCount   Int
+  durationMs   Int
+  pointsEarned Int
+  coinsEarned  Int
+  bestStreak   Int
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level         Level    @relation(fields: [levelId], references: [id])
+  questions     QuestionResult[]
+
+  @@index([userId, levelId])
+}
+
+model QuestionResult {
+  id            String   @id @default(cuid())
+  roundId       String
+  userId        String
+  questionIdx   Int
+  operation     String // + | - | × | ÷ | mixed
+  prompt        String // e.g. "7 × 8"
+  userAnswer    String?
+  correctAnswer String
+  isCorrect     Boolean
+  timeMs        Int
+  round         RoundResult @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ───────────── Marketplace ─────────────
+model Character {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String
+  rarity      String // common | rare | epic | legendary
+  price       Int
+  artKind     String // svg | emoji
+  artPayload  String // SVG markup or single emoji
+  perkType    String? // hint | time | none
+  perkValue   Int?
+  enabled     Boolean  @default(true)
+  purchases   Purchase[]
+  createdAt   DateTime @default(now())
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  userId      String
+  characterId String
+  pricePaid   Int
+  createdAt   DateTime @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@unique([userId, characterId])
+  @@index([userId])
+}
+
+// ───────────── Decks & flashcards ─────────────
+model Deck {
+  id            String   @id @default(cuid())
+  ownerId       String? // null = built-in
+  title         String
+  description   String
+  coverIcon     String // emoji
+  operation     String // + | - | × | ÷ | mixed
+  ageBand       String
+  isBuiltIn     Boolean  @default(false)
+  isPublic      Boolean  @default(true)
+  cards         Card[]
+  userDecks     UserDeck[]
+  assignedTo    User[]   @relation("AssignedDecks")
+  studySessions StudySession[]
+  matchScores   MatchScore[]
+
+  @@index([ownerId])
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  deckId      String
+  front       String // "7 × 8"
+  back        String // "56"
+  hint        String?
+  explanation String?
+  sortOrder   Int      @default(0)
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  cardProgress CardProgress[]
+
+  @@index([deckId])
+}
+
+model UserDeck { // user "has" this deck (built-in or custom)
+  id       String   @id @default(cuid())
+  userId   String
+  deckId   String
+  isCustom Boolean  @default(false)
+  addedAt  DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck     Deck     @relation(fields: [deckId], references: [id])
+
+  @@unique([userId, deckId])
+}
+
+model CardProgress { // SM-2 state per (user, card)
+  id             String   @id @default(cuid())
+  userId         String
+  cardId         String
+  status         String   @default("new") // new | learning | reviewing | mastered
+  ease           Float    @default(2.5)
+  interval       Int      @default(0) // days
+  nextReview     DateTime @default(now())
+  correctStreak  Int      @default(0)
+  totalReviews   Int      @default(0)
+  correctReviews Int      @default(0)
+  lastReviewed   DateTime?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card           Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cardId])
+  @@index([userId, nextReview])
+}
+
+model StudySession {
+  id            String   @id @default(cuid())
+  userId        String
+  deckId        String
+  mode          String // learn | match
+  cardsReviewed Int
+  newLearned    Int
+  accuracy      Float
+  durationSec   Int
+  pointsEarned  Int
+  coinsEarned   Int
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck          Deck     @relation(fields: [deckId], references: [id])
+
+  @@index([userId])
+}
+
+model MatchScore {
+  id        String   @id @default(cuid())
+  userId    String
+  deckId    String
+  timeSec   Int
+  mistakes  Int
+  score     Int
+  pairs     Int // 6 | 8 | 12
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck      Deck     @relation(fields: [deckId], references: [id])
+
+  @@index([userId, deckId])
+}
+
+// ───────────── Streaks, badges, daily ─────────────
+model Streak {
+  id       String   @id @default(cuid())
+  userId   String
+  type     String // login | study
+  current  Int      @default(0)
+  longest  Int      @default(0)
+  lastDate DateTime?
+  freezes  Int      @default(0)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String
+  emoji       String
+  coinReward  Int
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model DailyChallenge {
+  id           String   @id @default(cuid())
+  date         DateTime @unique // midnight UTC
+  type         String // cards | levels | match | points
+  target       Int
+  rewardCoins  Int
+  userProgress UserDailyProgress[]
+}
+
+model UserDailyProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  challengeId String
+  progress    Int      @default(0)
+  completed   Boolean  @default(false)
+  claimed     Boolean  @default(false)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   DailyChallenge   @relation(fields: [challengeId], references: [id])
+
+  @@unique([userId, challengeId])
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // earn | spend
+  amount    Int
+  reason    String // round | purchase | daily | badge | freeze
+  refId     String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
