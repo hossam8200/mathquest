@@ -30,6 +30,7 @@ model User {
   lastLoginDate      DateTime?
   loginStreak        Int       @default(0)
   longestLoginStreak Int       @default(0)
+  banned             Boolean   @default(false)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   parentId           String?
@@ -341,4 +342,11 @@ model RoundAttempt {
   level      Level    @relation(fields: [levelId], references: [id])
 
   @@index([userId])
+}
+
+// App-wide settings: feature flags, announcements, etc.
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }

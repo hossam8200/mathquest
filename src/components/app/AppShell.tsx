@@ -24,6 +24,7 @@ import { LeaderboardScreen } from './screens/LeaderboardScreen'
 import { ParentDashboardScreen } from './screens/ParentDashboardScreen'
 import { AdminPanelScreen } from './screens/AdminPanelScreen'
 import { GuideScreen } from './screens/GuideScreen'
+import { AnnouncementBanner } from './common/AnnouncementBanner'
 import type { ViewKey } from '@/types'
 
 export function AppShell() {
@@ -57,6 +58,7 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <AnnouncementBanner />
       <Header />
       <div className="flex flex-1">
         <Sidebar />

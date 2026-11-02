@@ -26,6 +26,9 @@ export async function POST(req: Request) {
   if (user.role === 'guest') {
     return NextResponse.json({ error: 'GUEST_CANNOT_LOGIN' }, { status: 403 })
   }
+  if (user.banned) {
+    return NextResponse.json({ error: 'BANNED' }, { status: 403 })
+  }
 
   // Daily login bonus + streak
   const today = new Date()
