@@ -31,10 +31,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // Recent activity
   const recentRounds = await db.roundResult.findMany({
     where: { userId: id },
-    include: { level: { select: { title: true, world: { select: { name: true, emoji: true } } } } },
     orderBy: { createdAt: 'desc' },
     take: 10,
-    select: { id: true, score: true, stars: true, correctCount: true, totalCount: true, pointsEarned: true, coinsEarned: true, createdAt: true, level: true },
+    select: { id: true, score: true, stars: true, correctCount: true, totalCount: true, pointsEarned: true, coinsEarned: true, createdAt: true, level: { select: { title: true, world: { select: { name: true, emoji: true } } } } },
   })
   const recentTransactions = await db.transaction.findMany({
     where: { userId: id },
@@ -44,7 +43,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   })
   const badges = await db.userBadge.findMany({
     where: { userId: id },
-    include: { badge: true },
+    select: { id: true, earnedAt: true, badge: true },
     orderBy: { earnedAt: 'desc' },
   })
 
