@@ -24,6 +24,7 @@ export interface LevelCompleteData {
   totalCount: number
   newBadges: { key: string; name: string; emoji: string; coinReward: number }[]
   unlockedNext: boolean
+  weakOps?: Record<string, number> // operation → wrong count (adaptive difficulty summary)
 }
 
 export function LevelCompleteDialog({
@@ -123,6 +124,25 @@ export function LevelCompleteDialog({
             {data.unlockedNext && (
               <div className="rounded-xl bg-emerald-100 p-2 text-center text-sm font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
                 🔓 {lang === 'ar' ? 'تم فتح المستوى التالي!' : 'Next level unlocked!'}
+              </div>
+            )}
+
+            {/* Needs Practice — adaptive difficulty summary for parents/kids */}
+            {data.weakOps && Object.keys(data.weakOps).length > 0 && (
+              <div className="rounded-xl border-2 border-rose-200 bg-rose-50 p-3 dark:bg-rose-950/20">
+                <div className="mb-1 flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+                  📊 {lang === 'ar' ? 'يحتاج ممارسة' : 'Needs Practice'}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(data.weakOps).map(([op, count]) => (
+                    <span key={op} className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">
+                      {op}: {count} {lang === 'ar' ? 'أخطاء' : 'wrong'}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {lang === 'ar' ? 'جرّب البطاقات التعليمية لتتحسن!' : 'Try flashcards to improve!'}
+                </p>
               </div>
             )}
           </div>

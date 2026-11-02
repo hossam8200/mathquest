@@ -61,6 +61,12 @@ export function GameplayScreen() {
   const [bestStreak, setBestStreak] = useState(0)
   const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION)
 
+  // Adaptive difficulty: track wrong answers per operation type.
+  // After 2+ wrong on the same operation, show progressively more detailed hints.
+  const [wrongByOp, setWrongByOp] = useState<Record<string, number>>({})
+  const [showExtraHint, setShowExtraHint] = useState(false)
+  const [hintLevel, setHintLevel] = useState(0) // 0=none, 1=basic, 2=detailed, 3=visual aid
+
   // Equipped character perk (extra time). Fetched once, cached by React Query.
   const perkSeconds = useEquippedPerkSeconds()
   const effectiveTimeRef = useRef(TIME_PER_QUESTION)
@@ -92,6 +98,7 @@ export function GameplayScreen() {
       setComplete(null)
       setIdx(0); setAnswers([]); setStreak(0); setBestStreak(0)
       setFeedback(null); setUserAnswer(''); setSelectedOption(null)
+      setWrongByOp({}); setShowExtraHint(false); setHintLevel(0)
       answeredRef.current = false
       try {
         const r = await fetch(`/api/gameplay/questions?levelId=${config!.levelId}`, { cache: 'no-store' })
@@ -152,6 +159,14 @@ export function GameplayScreen() {
       explanation: q.explanation,
     })
     setStreak(0)
+    // Adaptive difficulty: track timeout as wrong answer
+    setWrongByOp((prev) => {
+      const op = q.operation
+      const count = (prev[op] ?? 0) + 1
+      if (count >= 3) setHintLevel(3)
+      else if (count >= 2) setHintLevel(2)
+      return { ...prev, [op]: count }
+    })
     const elapsed = Date.now() - questionStartRef.current
     setAnswers((a) => [...a, { idx, userAnswer: null, timeMs: elapsed }])
     setBestStreak((b) => Math.max(b, 0))
@@ -180,6 +195,16 @@ export function GameplayScreen() {
       })
     } else {
       setStreak(0)
+      // Adaptive difficulty: track wrong answers per operation, escalate hints
+      setWrongByOp((prev) => {
+        const op = q.operation
+        const count = (prev[op] ?? 0) + 1
+        // Escalate hint level for this operation
+        if (count >= 3) setHintLevel(3) // visual aid
+        else if (count >= 2) setHintLevel(2) // detailed hint
+        else setHintLevel(1) // basic hint
+        return { ...prev, [op]: count }
+      })
     }
 
     const elapsed = Date.now() - questionStartRef.current
@@ -196,6 +221,8 @@ export function GameplayScreen() {
     setUserAnswer('')
     setSelectedOption(null)
     setFeedback(null)
+    setShowExtraHint(false)
+    setHintLevel(0)
     answeredRef.current = false
     setTimeLeft(effectiveTimeRef.current)
     questionStartRef.current = Date.now()
@@ -222,7 +249,8 @@ export function GameplayScreen() {
         return
       }
       sfx('coin')
-      setComplete(data)
+      // Merge server response with local adaptive-difficulty data
+      setComplete({ ...data, weakOps: wrongByOp })
     } catch {
       toast({ title: lang === 'ar' ? 'خطأ في الشبكة' : 'Network error', variant: 'destructive' })
     }
@@ -315,6 +343,46 @@ export function GameplayScreen() {
             <div className="mx-auto mb-3 max-w-xs rounded-lg bg-muted px-3 py-1.5 text-xs text-muted-foreground">
               💡 {current.hint}
             </div>
+          )}
+          {/* Adaptive difficulty: progressive hints when kids struggle */}
+          {hintLevel > 0 && !feedback && (
+            <div className={cn(
+              'mx-auto mb-3 max-w-md rounded-xl border-2 p-3 text-sm mq-pop',
+              hintLevel >= 3 ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/30' :
+              hintLevel >= 2 ? 'border-sky-400 bg-sky-50 dark:bg-sky-950/30' :
+              'border-muted bg-muted/50'
+            )}>
+              {hintLevel >= 3 ? (
+                <div className="text-center">
+                  <div className="font-bold text-amber-600 dark:text-amber-400">
+                    {lang === 'ar' ? '🎯 دعنا نتحلله معاً!' : "🎯 Let's break it down!"}
+                  </div>
+                  <div className="mt-1 text-xs">
+                    {current.operation === 'addition' && `${current.a} + ${current.b} = ${current.a} ${lang === 'ar' ? 'ثم' : 'then'} ${current.b}`}
+                    {current.operation === 'subtraction' && `${current.a} − ${current.b}: ${lang === 'ar' ? 'ابدأ من' : 'start from'} ${current.a} ${lang === 'ar' ? 'واطرح' : 'and take away'} ${current.b}`}
+                    {current.operation === 'multiplication' && `${current.a} × ${current.b} = ${current.a} ${lang === 'ar' ? 'مجموعة' : 'groups of'} ${current.b}`}
+                    {current.operation === 'division' && `${current.a} ÷ ${current.b}: ${lang === 'ar' ? 'كم مجموعة من' : 'how many groups of'} ${current.b} ${lang === 'ar' ? 'في' : 'fit in'} ${current.a}?`}
+                  </div>
+                </div>
+              ) : hintLevel >= 2 ? (
+                <div className="text-center font-bold text-sky-600 dark:text-sky-400">
+                  💡 {lang === 'ar' ? 'تلميح إضافي: الجواب قريب من' : 'Extra hint: the answer is near'} {Math.round(current.answer / 10) * 10}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  💡 {lang === 'ar' ? 'خذ وقتك، يمكنك القيام بذلك!' : "Take your time, you've got this!"}
+                </div>
+              )}
+            </div>
+          )}
+          {/* Hint button — always available, escalates after wrong answers */}
+          {!feedback && hintLevel === 0 && (
+            <button
+              onClick={() => { sfx('click'); setHintLevel(1); setShowExtraHint(true) }}
+              className="mx-auto mb-3 flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold text-muted-foreground hover:bg-muted"
+            >
+              💡 {lang === 'ar' ? 'أحتاج تلميحاً' : 'Need a hint?'}
+            </button>
           )}
         </div>
 
