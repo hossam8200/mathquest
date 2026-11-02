@@ -12,6 +12,7 @@ import { useSound } from '@/hooks/use-sound'
 import { t, type DictKey } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { Mascot } from '../gameplay/Mascot'
 import { Coins, Flame, Zap, Map as MapIcon } from 'lucide-react'
 import type { Operation, ProgressStats } from '@/types'
@@ -44,6 +45,18 @@ export function HomeScreen() {
   })
   const stats = statsQ.data?.stats
 
+  // Fetch active parent quests (shown as a glowing notification)
+  const questsQ = useQuery<{ quests: any[] }>({
+    queryKey: ['quests'],
+    queryFn: async () => {
+      const r = await fetch('/api/quests', { cache: 'no-store' })
+      if (!r.ok) return { quests: [] }
+      return r.json()
+    },
+    enabled: !!user,
+  })
+  const activeQuests = questsQ.data?.quests ?? []
+
   // Sync client settings from the server profile (handles dark mode/lang/text scale).
   useEffect(() => {
     if (user) {
@@ -65,6 +78,34 @@ export function HomeScreen() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-10">
+      {/* Parent Quest notification — glowing banner */}
+      {activeQuests.length > 0 && (
+        <div
+          className="mb-6 cursor-pointer rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-100 to-fuchsia-100 p-4 shadow-md dark:from-amber-950/30 dark:to-fuchsia-950/30 mq-float"
+          onClick={() => { sfx('click'); go({ view: 'worlds' }) }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="text-3xl mq-bounce">🛡️</div>
+            <div className="flex-1">
+              <div className="font-black text-amber-700 dark:text-amber-300">
+                {lang === 'ar' ? 'مهمة خاصة من ولي الأمر!' : 'Special Quest from Parent!'}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {activeQuests[0]?.message}
+              </div>
+              {activeQuests[0] && (
+                <div className="mt-1 flex items-center gap-2">
+                  <Progress value={(activeQuests[0].progress / activeQuests[0].target) * 100} className="h-1.5 w-32" />
+                  <span className="text-xs font-bold">{activeQuests[0].progress}/{activeQuests[0].target}</span>
+                  <span className="text-xs font-bold text-amber-600">+{activeQuests[0].rewardCoins} 🪙</span>
+                </div>
+              )}
+            </div>
+            <div className="text-2xl">→</div>
+          </div>
+        </div>
+      )}
+
       {/* Greeting */}
       <div className="mb-6 flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div>

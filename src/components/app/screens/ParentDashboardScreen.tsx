@@ -9,6 +9,11 @@
 // 6. Weak cards list with practice button
 // 7. Quick actions (assign deck, set limits, send coins)
 // 8. Progress summary (levels, stars, streaks)
+// 9. "How We Teach This" micro-guides (expandable teaching tips)
+// 10. Parent-Requested Quests (assign practice → child gets notification + reward)
+// 11. Teacher Report (printable one-page anonymized PDF)
+// 12. Family Goals (set goals + real-world reward suggestions)
+// 13. Privacy badge + Download My Data + Reset All Progress
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -25,9 +30,48 @@ import { Progress } from '@/components/ui/progress'
 import { Switch } from '@/components/ui/switch'
 import { Badge as UiBadge } from '@/components/ui/badge'
 import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip } from 'recharts'
-import { ChevronLeft, Lock, Clock, Target, Flame, TrendingDown, BookOpen, Settings, Star, Trophy, Zap, Calendar, Lightbulb, Gift, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronDown, ChevronUp, Lock, Clock, Target, Flame, TrendingDown, BookOpen, Settings, Star, Trophy, Zap, Calendar, Lightbulb, Gift, CheckCircle2, Shield, Download, Trash2, FileText, Swords } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+
+// Teaching tips — "How MathQuest teaches this" micro-guides for parents
+const TEACHING_TIPS: Record<string, { title: string; tip: string; homeActivity: string }> = {
+  addition: {
+    title: 'How MathQuest teaches addition',
+    tip: 'We use number bonds and partitioning. For 7+8, think 7+3=10, then 10+5=15.',
+    homeActivity: "Try at home: 'How many different ways can you make 15?'",
+  },
+  subtraction: {
+    title: 'How MathQuest teaches subtraction',
+    tip: 'We use counting back and number lines. For 15-8, start at 15 and count back 8 steps.',
+    homeActivity: "Try at home: 'If you have 15 cookies and eat 8, how many are left?'",
+  },
+  multiplication: {
+    title: 'How MathQuest teaches multiplication',
+    tip: 'We break into parts. For 7×8, think (7×5)+(7×3)=35+21=56. This is called partial products.',
+    homeActivity: "Try at home: 'What's 7 fives? Now add 3 more sevens!'",
+  },
+  division: {
+    title: 'How MathQuest teaches division',
+    tip: 'We think of groups. For 56÷7, ask "How many groups of 7 fit in 56?"',
+    homeActivity: "Try at home: 'Share 56 candies equally among 7 friends. How many each?'",
+  },
+}
+
+const GOAL_TYPES = [
+  { type: 'days', label: 'Play 3 days this week', target: 3, icon: '📅' },
+  { type: 'levels', label: 'Complete 5 new levels', target: 5, icon: '🎯' },
+  { type: 'stars', label: 'Earn 10 new stars', target: 10, icon: '⭐' },
+  { type: 'boss', label: 'Defeat a Boss level', target: 1, icon: '👑' },
+]
+
+const REAL_WORLD_REWARDS = [
+  'Let them pick the Friday night movie 🎬',
+  'A favorite snack or treat 🍦',
+  '30 extra minutes of screen time ⏰',
+  'Choose what\'s for dinner one night 🍕',
+  'A trip to the park or playground 🏞️',
+]
 
 export function ParentDashboardScreen() {
   const lang = useSettingsStore((s) => s.lang)
@@ -100,12 +144,16 @@ function DashboardContent() {
   const lang = useSettingsStore((s) => s.lang)
   const go = useAppStore((s) => s.go)
   const { user } = useCurrentUser()
+  const sfx = useSound()
   const { toast } = useToast()
   const qc = useQueryClient()
   const [timeLimit, setTimeLimit] = useState(60)
   const [cardGoal, setCardGoal] = useState(20)
   const [encourageMsg, setEncourageMsg] = useState('')
   const [encourageCoins, setEncourageCoins] = useState(20)
+  const [expandedTip, setExpandedTip] = useState<string | null>(null)
+  const [showTeacherReport, setShowTeacherReport] = useState(false)
+  const [selectedGoalType, setSelectedGoalType] = useState('days')
 
   const { data, isLoading } = useQuery({
     queryKey: ['parent-dashboard'],
@@ -157,6 +205,64 @@ function DashboardContent() {
       sfx('coin')
       toast({ title: `🎁 +${encourageCoins} coins sent to ${data?.childName}!` })
       setEncourageMsg('')
+      qc.invalidateQueries({ queryKey: ['parent-dashboard'] })
+    },
+  })
+
+  // Parent quest — assign a practice quest to the child
+  const questMut = useMutation({
+    mutationFn: async (payload: { operation: string; target: number; rewardCoins: number }) => {
+      const r = await fetch('/api/parent/quests', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      return r.json()
+    },
+    onSuccess: () => {
+      sfx('levelup')
+      toast({ title: `🛡️ Quest assigned! ${data?.childName} will see it on next login.` })
+    },
+  })
+
+  // Family goal — set a co-op goal
+  const goalMut = useMutation({
+    mutationFn: async (goalType: string) => {
+      const goal = GOAL_TYPES.find(g => g.type === goalType)!
+      const reward = REAL_WORLD_REWARDS[Math.floor(Math.random() * REAL_WORLD_REWARDS.length)]
+      const r = await fetch('/api/parent/family-goal', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: goal.type, target: goal.target, reward }),
+      })
+      return r.json()
+    },
+    onSuccess: (d) => {
+      toast({ title: '🎯 Family goal set!', description: d.goal?.reward })
+    },
+  })
+
+  // Download data
+  const downloadMut = useMutation({
+    mutationFn: async () => {
+      const r = await fetch('/api/parent/download-data')
+      const blob = await r.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `mathquest-data-${data?.childName}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+    onSuccess: () => toast({ title: '📥 Data downloaded!' }),
+  })
+
+  // Reset progress
+  const resetMut = useMutation({
+    mutationFn: async () => {
+      const r = await fetch('/api/parent/reset-progress', { method: 'POST' })
+      return r.json()
+    },
+    onSuccess: () => {
+      toast({ title: '✅ All progress has been reset.' })
       qc.invalidateQueries({ queryKey: ['parent-dashboard'] })
     },
   })
@@ -288,28 +394,64 @@ function DashboardContent() {
         </Card>
       )}
 
-      {/* Weak areas */}
+      {/* Weak areas + teaching tips + parent quests */}
       <Card className="mb-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
             <TrendingDown className="h-4 w-4 text-rose-500" />
-            {t(lang, 'weakAreas')}
+            {t(lang, 'weakAreas')} · {ar ? 'كيف نساعد' : 'How to Help'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {data.weakAreas.length === 0 ? (
             <p className="text-sm text-muted-foreground">{ar ? 'لا توجد بيانات بعد.' : 'No data yet.'}</p>
           ) : (
-            <div className="space-y-2">
-              {data.weakAreas.map((w: { operation: string; accuracy: number }) => (
-                <div key={w.operation} className="flex items-center justify-between">
-                  <span className="font-bold capitalize">{w.operation}</span>
-                  <div className="flex items-center gap-2">
-                    <Progress value={w.accuracy} className={cn('h-2 w-32', w.accuracy < 50 && '[&>*]:bg-rose-500')} />
-                    <span className={cn('text-sm font-bold', w.accuracy < 50 ? 'text-rose-500' : 'text-emerald-500')}>{w.accuracy}%</span>
+            <div className="space-y-3">
+              {data.weakAreas.map((w: { operation: string; accuracy: number }) => {
+                const tip = TEACHING_TIPS[w.operation]
+                const expanded = expandedTip === w.operation
+                return (
+                  <div key={w.operation} className="rounded-xl border p-3">
+                    {/* Operation + accuracy bar */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold capitalize">{w.operation}</span>
+                      <div className="flex items-center gap-2">
+                        <Progress value={w.accuracy} className={cn('h-2 w-24', w.accuracy < 50 && '[&>*]:bg-rose-500')} />
+                        <span className={cn('text-sm font-bold', w.accuracy < 50 ? 'text-rose-500' : 'text-emerald-500')}>{w.accuracy}%</span>
+                      </div>
+                    </div>
+                    {/* Actions: teaching tip + assign quest */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {tip && (
+                        <button
+                          onClick={() => setExpandedTip(expanded ? null : w.operation)}
+                          className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold text-primary hover:bg-primary/5"
+                        >
+                          <BookOpen className="h-3 w-3" />
+                          {ar ? 'كيف نُعلّم هذا' : 'How we teach this'}
+                          {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => questMut.mutate({ operation: w.operation as any, target: 3, rewardCoins: 50 })}
+                        disabled={questMut.isPending}
+                        className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                      >
+                        <Swords className="h-3 w-3" />
+                        {ar ? 'إرسل مهمة!' : 'Assign Quest!'}
+                      </button>
+                    </div>
+                    {/* Expandable teaching tip */}
+                    {expanded && tip && (
+                      <div className="mt-2 rounded-lg bg-muted p-2 text-xs mq-pop">
+                        <div className="font-bold text-primary">💡 {tip.title}</div>
+                        <p className="mt-1 text-muted-foreground">{tip.tip}</p>
+                        <p className="mt-1 font-medium">{tip.homeActivity}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </CardContent>
@@ -452,6 +594,150 @@ function DashboardContent() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* ─── Family Goals (Co-Op) ─── */}
+      <Card className="mb-4 border-2 border-fuchsia-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm text-fuchsia-600">
+            <Target className="h-4 w-4" />
+            {ar ? 'هدف عائلي' : 'Family Goal'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            {ar ? 'اضبط هدفاً — عند تحقيقه، اقترح مكافأة واقعية!' : 'Set a goal — when achieved, suggest a real-world reward!'}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {GOAL_TYPES.map(g => (
+              <button
+                key={g.type}
+                onClick={() => { sfx('click'); setSelectedGoalType(g.type) }}
+                className={cn(
+                  'flex items-center gap-2 rounded-xl border-2 p-2 text-left text-sm transition',
+                  selectedGoalType === g.type ? 'border-fuchsia-400 bg-fuchsia/5' : 'border-border hover:border-fuchsia-300'
+                )}
+              >
+                <span className="text-xl">{g.icon}</span>
+                <span className="font-bold">{g.label}</span>
+              </button>
+            ))}
+          </div>
+          <Button className="w-full" variant="outline" onClick={() => goalMut.mutate(selectedGoalType)} disabled={goalMut.isPending}>
+            <Target className="mr-1 h-4 w-4" /> {ar ? 'اضبط الهدف' : 'Set Goal'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* ─── Teacher Report ─── */}
+      <Card className="mb-4 border-2 border-sky-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm text-sky-600">
+            <FileText className="h-4 w-4" />
+            {ar ? 'تقرير للمعلم' : 'Teacher Report'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-2 text-xs text-muted-foreground">
+            {ar ? 'أنشئ تقريراً مجهول الهوية من صفحة واحدة — آمن للمشاركة مع المدرسة' : 'Generate a clean, anonymized one-page report — safe to share with school'}
+          </p>
+          <Button variant="outline" className="w-full" onClick={() => setShowTeacherReport(true)}>
+            <FileText className="mr-1 h-4 w-4" /> {ar ? 'إنشاء التقرير' : 'Generate Report'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* ─── Privacy & Data Controls ─── */}
+      <Card className="mb-4 border-2 border-emerald-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm text-emerald-600">
+            <Shield className="h-4 w-4" />
+            {ar ? 'الخصوصية والبيانات' : 'Privacy & Data'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="rounded-lg bg-emerald-50 p-3 text-xs dark:bg-emerald-950/20">
+            <div className="flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-300">
+              <Shield className="h-3 w-3" /> {ar ? 'الخصوصية أولاً' : 'Privacy First'}
+            </div>
+            <p className="mt-1 text-muted-foreground">
+              {ar
+                ? 'هذه اللوحة لا تستخدم كوكيز تتبع، لا تبيع بيانات، وتخزن التقدم المرتبط بالاسم المستعار فقط.'
+                : 'This dashboard uses no tracking cookies, sells no data, and only stores progress linked to this nickname.'}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => downloadMut.mutate()} disabled={downloadMut.isPending}>
+              <Download className="mr-1 h-4 w-4" /> {ar ? 'تحميل بياناتي' : 'Download My Data'}
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1 text-rose-600 hover:bg-rose-50" onClick={() => {
+              if (confirm(ar ? 'سيتم حذف كل التقدم نهائياً. هل أنت متأكد؟' : 'This will permanently delete ALL progress. Are you sure?')) {
+                resetMut.mutate()
+              }
+            }} disabled={resetMut.isPending}>
+              <Trash2 className="mr-1 h-4 w-4" /> {ar ? 'إعادة تعيين' : 'Reset All'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ─── Teacher Report Dialog ─── */}
+      {showTeacherReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowTeacherReport(false)}>
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="text-4xl">🦊</div>
+              <h2 className="mt-2 text-2xl font-black text-orange-600">MathQuest Progress Report</h2>
+              <p className="text-xs text-muted-foreground">Anonymized — safe to share with teachers</p>
+            </div>
+            <div className="mt-6 space-y-4 text-sm">
+              <div className="border-b pb-2">
+                <span className="font-bold">Student:</span> {data.childName} (nickname only — no real name)
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Age Group:</span> {data.ageBand}
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Levels Completed:</span> {data.levelsCompleted}
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Total Stars Earned:</span> {data.totalStars} ⭐
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Study Streak:</span> {data.studyStreak} days (longest: {data.longestStudyStreak})
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Accuracy by Operation:</span>
+                <ul className="mt-1 ml-4 list-disc">
+                  {Object.entries(data.accuracyByOp).map(([op, acc]) => (
+                    <li key={op} className="capitalize">{op}: {acc}%</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Focus Areas:</span>
+                <ul className="mt-1 ml-4 list-disc">
+                  {data.weakAreas.map((w: any) => (
+                    <li key={w.operation} className="capitalize">{w.operation} ({w.accuracy}% — needs practice)</li>
+                  ))}
+                  {data.weakAreas.length === 0 && <li>All operations at acceptable levels</li>}
+                </ul>
+              </div>
+              <div className="border-b pb-2">
+                <span className="font-bold">Badges Earned:</span> {data.weekBadges.length} this week
+              </div>
+              <div className="rounded-lg bg-amber-50 p-2 text-xs text-muted-foreground">
+                🔒 This report contains no personal data. The nickname is chosen by the child and is not linked to any real identity.
+              </div>
+            </div>
+            <div className="mt-6 flex gap-2">
+              <Button className="flex-1" onClick={() => window.print()}>
+                <FileText className="mr-1 h-4 w-4" /> Print / Save PDF
+              </Button>
+              <Button variant="outline" onClick={() => setShowTeacherReport(false)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

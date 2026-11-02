@@ -51,6 +51,7 @@ model User {
   childrenAccounts  User[]   @relation("ParentChildren")
   parentAccount     User?    @relation("ParentChildren", fields: [parentId], references: [id])
   attempts          RoundAttempt[]
+  parentQuests      ParentQuest[]
 
   @@index([parentId])
 }
@@ -344,9 +345,25 @@ model RoundAttempt {
   @@index([userId])
 }
 
-// App-wide settings: feature flags, announcements, etc.
+// App-wide settings: feature flags, announcements, family goals, etc.
 model AppSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// Parent-requested quests: parent assigns practice, child gets a notification + reward
+model ParentQuest {
+  id          String   @id @default(cuid())
+  childId     String
+  operation   String   // addition | subtraction | multiplication | division | mixed
+  target      Int      // e.g., 3 levels to complete
+  rewardCoins Int
+  message     String   // shown to the child
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+  child       User     @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
 }
