@@ -45,29 +45,29 @@ export async function GET() {
   // Most played levels (top 10)
   const levelPlayCounts = await db.roundResult.groupBy({
     by: ['levelId'],
-    _count: { _all: true },
-    orderBy: { _count: { _all: 'desc' } },
+    _count: { id: true },
+    orderBy: { _count: { id: 'desc' } },
     take: 10,
   })
   const levelIds = levelPlayCounts.map(l => l.levelId)
-  const levels = await db.level.findMany({ where: { id: { in: levelIds } }, include: { world: { select: { name: true, emoji: true } } }, select: { id: true, title: true, levelNumber: true, world: true } })
+  const levels = await db.level.findMany({ where: { id: { in: levelIds } }, select: { id: true, title: true, levelNumber: true, world: { select: { name: true, emoji: true } } } })
   const popularLevels = levelPlayCounts.map(lc => {
     const level = levels.find(l => l.id === lc.levelId)
-    return { title: level ? `${level.world.emoji} ${level.title}` : lc.levelId, plays: lc._count._all }
+    return { title: level ? `${level.world.emoji} ${level.title}` : lc.levelId, plays: lc._count.id }
   })
 
   // Most popular characters (purchases count)
   const charPurchases = await db.purchase.groupBy({
     by: ['characterId'],
-    _count: { _all: true },
-    orderBy: { _count: { _all: 'desc' } },
+    _count: { id: true },
+    orderBy: { _count: { id: 'desc' } },
     take: 10,
   })
   const charIds = charPurchases.map(c => c.characterId)
   const chars = await db.character.findMany({ where: { id: { in: charIds } }, select: { id: true, name: true, artPayload: true, rarity: true } })
   const popularCharacters = charPurchases.map(cp => {
     const char = chars.find(c => c.id === cp.characterId)
-    return { name: char?.name ?? cp.characterId, emoji: char?.artPayload ?? '❓', buys: cp._count._all }
+    return { name: char?.name ?? cp.characterId, emoji: char?.artPayload ?? '❓', buys: cp._count.id }
   })
 
   // Coin flow (earned vs spent, last 7 days)

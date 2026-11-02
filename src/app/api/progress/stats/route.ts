@@ -28,18 +28,18 @@ export async function GET() {
   const correctByOp = await db.questionResult.groupBy({
     by: ['operation'],
     where: { userId: user.id, isCorrect: true },
-    _count: { _all: true },
+    _count: { id: true },
   })
   const totalByOp = await db.questionResult.groupBy({
     by: ['operation'],
     where: { userId: user.id },
-    _count: { _all: true },
+    _count: { id: true },
   })
   const accuracyByOp: Record<string, number> = {}
   for (const t of totalByOp) {
     const c = correctByOp.find((x) => x.operation === t.operation)
-    const correct = c?._count._all ?? 0
-    const total = t._count._all
+    const correct = c?._count.id ?? 0
+    const total = t._count.id
     accuracyByOp[t.operation] = total > 0 ? Math.round((correct / total) * 100) : 0
   }
 

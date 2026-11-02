@@ -28,18 +28,18 @@ export async function GET() {
   const correctByOp = await db.questionResult.groupBy({
     by: ['operation'],
     where: { userId: user.id, isCorrect: true },
-    _count: { _all: true },
+    _count: { id: true },
   })
   const totalByOp = await db.questionResult.groupBy({
     by: ['operation'],
     where: { userId: user.id },
-    _count: { _all: true },
+    _count: { id: true },
   })
   const accuracyByOp: Record<string, number> = {}
   for (const t of totalByOp) {
     const c = correctByOp.find((x) => x.operation === t.operation)
-    accuracyByOp[t.operation] = t._count._all > 0
-      ? Math.round(((c?._count._all ?? 0) / t._count._all) * 100)
+    accuracyByOp[t.operation] = t._count.id > 0
+      ? Math.round(((c?._count.id ?? 0) / t._count.id) * 100)
       : 0
   }
   const weakAreas = Object.entries(accuracyByOp)
