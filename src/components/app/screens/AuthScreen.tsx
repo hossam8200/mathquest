@@ -269,34 +269,6 @@ export function AuthScreen() {
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ─── */}
-      <section className="relative z-10 mx-auto max-w-4xl px-4 py-12">
-        <h2 className="mb-6 text-center text-3xl font-black">
-          {ar ? 'ماذا يقول الآباء والمعلمون؟' : 'Loved by Parents & Teachers'}
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {TESTIMONIALS.map((t) => (
-            <Card key={t.name} className="overflow-hidden">
-              <CardContent className="p-5">
-                <div className="mb-2 flex gap-0.5">
-                  {Array.from({ length: t.stars }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-sm italic text-foreground">"{t.text}"</p>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="text-2xl">{t.emoji}</span>
-                  <div>
-                    <div className="text-sm font-bold">{t.name}</div>
-                    <div className="text-xs text-muted-foreground">{t.role}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
       {/* ─── AUTH FORM ─── */}
       <section id="auth-form" className="relative z-10 mx-auto max-w-md px-4 py-12">
         <Card className="shadow-xl">
