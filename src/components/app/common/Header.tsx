@@ -47,24 +47,24 @@ export function Header() {
   if (!user) return null
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur md:px-6">
-      {/* Mobile sidebar toggle */}
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-1 border-b bg-background/95 px-2 backdrop-blur md:gap-2 md:px-6">
+      {/* Mobile sidebar toggle — proper hamburger icon */}
       <Button
         variant="ghost"
-        size="sm"
-        className="md:hidden"
+        size="icon"
+        className="md:hidden shrink-0"
         aria-label="Menu"
         onClick={() => setSidebarOpen(!sidebarOpen)}
       >
-        ☰
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
       </Button>
 
       <button
         onClick={() => go({ view: 'home' })}
-        className="flex items-center gap-2 font-extrabold tracking-tight"
+        className="flex items-center gap-1 font-extrabold tracking-tight shrink-0"
       >
-        <span className="text-2xl">🦊</span>
-        <span className="hidden sm:inline text-lg">{t(lang, 'appName')}</span>
+        <span className="text-xl md:text-2xl">🦊</span>
+        <span className="hidden sm:inline text-base md:text-lg">{t(lang, 'appName')}</span>
       </button>
 
       {/* Equipped character / kid avatar — clickable, goes to Collection */}
@@ -76,19 +76,19 @@ export function Header() {
         <img
           src={avatarSrc}
           alt={user.nickname}
-          width={32}
-          height={32}
-          className="rounded-full ring-2 ring-primary/30"
+          width={28}
+          height={28}
+          className="rounded-full ring-2 ring-primary/30 md:h-8 md:w-8"
           loading="lazy"
         />
       </button>
 
       <div className="ml-auto flex items-center gap-1 md:gap-2">
-        {/* Guide — visible to all logged-in users */}
+        {/* Guide — hidden on mobile (in sidebar) */}
         <Button
           variant="ghost"
           size="sm"
-          className="hidden sm:flex gap-1"
+          className="hidden md:flex gap-1"
           aria-label={lang === 'ar' ? 'الدليل' : 'Guide'}
           onClick={() => go({ view: 'guide' })}
         >
@@ -96,51 +96,54 @@ export function Header() {
           <span className="hidden md:inline">{lang === 'ar' ? 'الدليل' : 'Guide'}</span>
         </Button>
 
-        {/* Streak */}
-        <div className="hidden sm:flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 text-sm font-bold text-amber-700 dark:text-amber-300">
-          <Flame className="h-4 w-4" />
+        {/* Streak — hidden on mobile */}
+        <div className="hidden md:flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300 md:px-2.5 md:py-1 md:text-sm">
+          <Flame className="h-3 w-3 md:h-4 md:w-4" />
           {user.loginStreak}
         </div>
 
-        {/* Coins */}
+        {/* Coins — compact on mobile */}
         <button
           onClick={() => go({ view: 'marketplace' })}
-          className="flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 px-2.5 py-1 text-sm font-bold text-yellow-700 dark:text-yellow-300"
+          className="flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 text-xs font-bold text-yellow-700 dark:text-yellow-300 md:px-2.5 md:py-1 md:text-sm"
           aria-label={t(lang, 'coins')}
         >
           <Coins className="h-4 w-4" />
           {user.coins}
         </button>
 
-        {/* Sound */}
+        {/* Sound — compact */}
         <Button
           variant="ghost"
           size="icon"
+          className="h-9 w-9 shrink-0"
           aria-label={soundEnabled ? t(lang, 'mute') : t(lang, 'unmute')}
           onClick={() => { setSound(!soundEnabled); if (soundEnabled) sfx('click') }}
         >
           {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </Button>
 
-        {/* Dark mode */}
+        {/* Dark mode — hidden on mobile (in sidebar) */}
         <Button
           variant="ghost"
           size="icon"
+          className="hidden md:inline-flex shrink-0"
           aria-label={t(lang, 'darkMode')}
           onClick={() => setDarkMode(!darkMode)}
         >
           {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
 
-        {/* Settings */}
-        <Button variant="ghost" size="icon" aria-label={t(lang, 'settings')} onClick={() => go({ view: 'settings' })}>
+        {/* Settings — hidden on mobile (in sidebar) */}
+        <Button variant="ghost" size="icon" className="hidden md:inline-flex shrink-0" aria-label={t(lang, 'settings')} onClick={() => go({ view: 'settings' })}>
           <SettingsIcon className="h-4 w-4" />
         </Button>
 
-        {/* Logout */}
+        {/* Logout — compact */}
         <Button
           variant="ghost"
           size="icon"
+          className="h-9 w-9 shrink-0"
           aria-label={t(lang, 'logout')}
           onClick={async () => {
             await fetch('/api/auth/logout', { method: 'POST' })
