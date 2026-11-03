@@ -54,8 +54,16 @@ export async function GET() {
   }
 
   const toInfo = (d: typeof builtin[number]): DeckInfo => {
-    const counts = byDeck.get(d.id) ?? { new: 0, learning: 0, reviewing: 0, mastered: 0 }
+    const rawCounts = byDeck.get(d.id) ?? { new: 0, learning: 0, reviewing: 0, mastered: 0 }
     const total = d._count.cards
+    // "New" = total cards minus cards that have been studied (have a CardProgress row)
+    const studiedCount = rawCounts.new + rawCounts.learning + rawCounts.reviewing + rawCounts.mastered
+    const counts = {
+      new: Math.max(0, total - studiedCount),
+      learning: rawCounts.learning,
+      reviewing: rawCounts.reviewing,
+      mastered: rawCounts.mastered,
+    }
     const masteryPct = total > 0 ? Math.round((counts.mastered / total) * 100) : 0
     return {
       id: d.id,
