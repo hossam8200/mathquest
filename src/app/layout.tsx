@@ -57,7 +57,18 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+                  navigator.serviceWorker.register('/sw.js').then((reg) => {
+                    // Check for updates every 60 seconds
+                    setInterval(() => reg.update(), 60000);
+                    // When a new service worker takes over, reload the page
+                    let refreshing = false;
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                      if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                      }
+                    });
+                  }).catch(() => {});
                 });
               }
             `,
