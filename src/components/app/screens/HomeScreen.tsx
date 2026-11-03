@@ -20,7 +20,7 @@ import { Progress } from '@/components/ui/progress'
 import { Mascot } from '../gameplay/Mascot'
 import { Coins, Flame, Zap, Map as MapIcon, BookOpen, Lock, Star, Gift } from 'lucide-react'
 import type { Operation, ProgressStats } from '@/types'
-import { kidAvatar, questGiverAvatar } from '@/lib/dicebear'
+import { kidAvatar, questGiverAvatar, avatarUrl, styleForRarity } from '@/lib/dicebear'
 import { cn } from '@/lib/utils'
 
 const OPS: { key: Operation; emoji: string; color: string; labelKey: DictKey }[] = [
@@ -99,6 +99,10 @@ export function HomeScreen() {
   const equippedChar = charsQ.data?.characters.find(c => c.equipped)
   const charName = equippedChar?.name ?? 'Foxy'
   const charEmoji = equippedChar?.artPayload ?? '🦊'
+  // Use equipped character's DiceBear avatar, fall back to nickname-based
+  const homeAvatarSrc = equippedChar
+    ? avatarUrl(equippedChar.key, styleForRarity(equippedChar.rarity), 56)
+    : kidAvatar(user.nickname, 56)
 
   // Sync client settings from the server profile
   useEffect(() => {
@@ -172,7 +176,7 @@ export function HomeScreen() {
         </div>
         <button onClick={() => go({ view: 'collection' })} className="transition hover:scale-110">
           <img
-            src={kidAvatar(user.nickname, 56)}
+            src={homeAvatarSrc}
             alt={user.nickname}
             width={56}
             height={56}

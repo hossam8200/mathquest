@@ -9,8 +9,10 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useSound } from '@/hooks/use-sound'
 import { Button } from '@/components/ui/button'
 import { Coins, Flame, Volume2, VolumeX, Moon, Sun, LogOut, Settings as SettingsIcon, BookOpen } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { t } from '@/lib/i18n'
-import { kidAvatar } from '@/lib/dicebear'
+import { kidAvatar, avatarUrl, styleForRarity } from '@/lib/dicebear'
+import type { CharacterInfo } from '@/types'
 
 export function Header() {
   const { user } = useCurrentUser()
@@ -23,6 +25,24 @@ export function Header() {
   const darkMode = useSettingsStore((s) => s.darkMode)
   const setDarkMode = useSettingsStore((s) => s.setDarkMode)
   const sfx = useSound()
+
+  // Fetch marketplace data to find equipped character (cached by React Query)
+  const charsQ = useQuery<{ characters: CharacterInfo[] }>({
+    queryKey: ['marketplace'],
+    queryFn: async () => {
+      const r = await fetch('/api/marketplace/list', { cache: 'no-store' })
+      if (!r.ok) return { characters: [] }
+      return r.json()
+    },
+    staleTime: 30_000,
+  })
+  const equippedChar = charsQ.data?.characters.find(c => c.equipped)
+  // Use equipped character's key + rarity for avatar, fall back to nickname
+  const avatarSeed = equippedChar?.key || user.nickname
+  const avatarStyle = equippedChar ? styleForRarity(equippedChar.rarity) : 'adventurer' as const
+  const avatarSrc = equippedChar
+    ? avatarUrl(avatarSeed, avatarStyle, 32)
+    : kidAvatar(user.nickname, 32)
 
   if (!user) return null
 
@@ -54,7 +74,7 @@ export function Header() {
         aria-label={lang === 'ar' ? 'شخصيتي' : 'My Character'}
       >
         <img
-          src={kidAvatar(user.nickname, 32)}
+          src={avatarSrc}
           alt={user.nickname}
           width={32}
           height={32}
