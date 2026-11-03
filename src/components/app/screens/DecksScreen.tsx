@@ -62,17 +62,17 @@ export function DecksScreen() {
 
   function startLearn(d: DeckInfo, weakOnly = false) {
     useAppStore.setState({ selectedDeckId: d.id })
-    go({ view: 'flashcard-learn' })
-    // Store weakOnly flag via a URL param the learn screen reads
     if (weakOnly) sessionStorage.setItem('mq-weak-only', '1')
     else sessionStorage.removeItem('mq-weak-only')
-    setSelectedDeck(null)
+    setSelectedDeck(null) // close modal first
+    // Navigate after the modal closes — avoids Dialog event conflicts
+    setTimeout(() => go({ view: 'flashcard-learn' }), 50)
   }
 
   function startMatch(d: DeckInfo) {
     useAppStore.setState({ selectedDeckId: d.id })
-    go({ view: 'match-game' })
     setSelectedDeck(null)
+    setTimeout(() => go({ view: 'match-game' }), 50)
   }
 
   return (
@@ -186,11 +186,12 @@ function DeckDetailModal({
   onMatch: () => void
   lang: 'en' | 'ar'
 }) {
-  if (!deck) return null
-  const counts = deck.counts ?? { new: 0, learning: 0, reviewing: 0, mastered: 0 }
+  const counts = deck?.counts ?? { new: 0, learning: 0, reviewing: 0, mastered: 0 }
   return (
     <Dialog open={!!deck} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm" onInteractOutside={(e) => e.preventDefault()}>
+        {deck && (
+          <>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-3xl">{deck.coverIcon}</span>
@@ -224,18 +225,20 @@ function DeckDetailModal({
           </div>
         </div>
         <DialogFooter className="flex-col gap-2">
-          <Button className="w-full" onClick={() => onLearn(false)}>
+          <Button type="button" className="w-full" onClick={(e) => { e.stopPropagation(); onLearn(false) }}>
             <BookOpen className="mr-1 h-4 w-4" /> {t(lang, 'learn')}
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => onLearn(true)} disabled={counts.learning + counts.reviewing === 0}>
+            <Button type="button" variant="outline" className="flex-1" onClick={(e) => { e.stopPropagation(); onLearn(true) }} disabled={counts.learning + counts.reviewing === 0}>
               <Zap className="mr-1 h-4 w-4" /> {t(lang, 'practiceWeak')}
             </Button>
-            <Button variant="outline" className="flex-1" onClick={onMatch}>
+            <Button type="button" variant="outline" className="flex-1" onClick={(e) => { e.stopPropagation(); onMatch() }}>
               <Gamepad2 className="mr-1 h-4 w-4" /> {t(lang, 'match')}
             </Button>
           </div>
         </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )
