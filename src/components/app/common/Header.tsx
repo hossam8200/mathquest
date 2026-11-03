@@ -10,6 +10,7 @@ import { useSound } from '@/hooks/use-sound'
 import { Button } from '@/components/ui/button'
 import { Coins, Flame, Volume2, VolumeX, Moon, Sun, LogOut, Settings as SettingsIcon, BookOpen } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { kidAvatar } from '@/lib/dicebear'
 
 export function Header() {
   const { user } = useCurrentUser()
@@ -46,14 +47,20 @@ export function Header() {
         <span className="hidden sm:inline text-lg">{t(lang, 'appName')}</span>
       </button>
 
-      {/* Equipped character — clickable, goes to Collection */}
+      {/* Equipped character / kid avatar — clickable, goes to Collection */}
       <button
         onClick={() => go({ view: 'collection' })}
-        className="hidden sm:flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-sm font-bold transition hover:bg-muted/80"
+        className="flex items-center gap-1 rounded-full transition hover:opacity-80"
         aria-label={lang === 'ar' ? 'شخصيتي' : 'My Character'}
       >
-        <span className="text-lg">{user.avatarCharacterId ? '🦊' : '🦊'}</span>
-        <span className="hidden md:inline">{lang === 'ar' ? 'شخصيتي' : 'Character'}</span>
+        <img
+          src={kidAvatar(user.nickname, 32)}
+          alt={user.nickname}
+          width={32}
+          height={32}
+          className="rounded-full ring-2 ring-primary/30"
+          loading="lazy"
+        />
       </button>
 
       <div className="ml-auto flex items-center gap-1 md:gap-2">

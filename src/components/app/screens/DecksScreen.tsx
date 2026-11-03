@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChevronLeft, Plus, BookOpen, Gamepad2, Zap, Layers } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { avatarUrl, styleForOperation } from '@/lib/dicebear'
 import type { DeckInfo } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -152,7 +153,7 @@ function DeckCard({ deck, onClick }: { deck: DeckInfo; onClick: () => void }) {
     <button onClick={onClick} className="text-left">
       <Card className="overflow-hidden transition hover:-translate-y-1 hover:shadow-lg">
         <div className={cn('flex items-center justify-center bg-gradient-to-br p-4 text-4xl', OP_GRADIENTS[deck.operation] ?? OP_GRADIENTS.mixed)}>
-          <span className="mq-float">{deck.coverIcon}</span>
+          <img src={avatarUrl(deck.title, styleForOperation(deck.operation), 40)} alt={deck.title} width={40} height={40} className="mq-float rounded-full" loading="lazy" />
         </div>
         <CardContent className="p-3">
           <h3 className="truncate text-sm font-bold">{deck.title}</h3>

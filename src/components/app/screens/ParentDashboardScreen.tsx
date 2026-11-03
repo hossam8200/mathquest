@@ -32,6 +32,7 @@ import { Badge as UiBadge } from '@/components/ui/badge'
 import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip } from 'recharts'
 import { ChevronLeft, ChevronDown, ChevronUp, Lock, Clock, Target, Flame, TrendingDown, BookOpen, Settings, Star, Trophy, Zap, Calendar, Lightbulb, Gift, CheckCircle2, Shield, Download, Trash2, FileText, Swords } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { kidAvatar } from '@/lib/dicebear'
 import { cn } from '@/lib/utils'
 
 // Teaching tips — "How MathQuest teaches this" micro-guides for parents
@@ -282,7 +283,7 @@ function DashboardContent() {
 
       {/* Header with child info */}
       <div className="mb-6 flex items-center gap-4">
-        <div className="text-5xl">{data.avatarCharacterId ? '🦊' : '👤'}</div>
+        <img src={kidAvatar(data.childName, 56)} alt={data.childName} width={56} height={56} className="rounded-full ring-2 ring-primary/30" loading="lazy" />
         <div>
           <h1 className="text-2xl font-black">{data.childName}</h1>
           <p className="text-sm text-muted-foreground">

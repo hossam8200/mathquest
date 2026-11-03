@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChevronLeft, Users, Package, BarChart3, Settings as SettingsIcon, Trophy, Layers, Zap, Coins, Ban, KeyRound, Search, Gift, Megaphone } from 'lucide-react'
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip } from 'recharts'
 import { t } from '@/lib/i18n'
+import { kidAvatar } from '@/lib/dicebear'
 import { cn } from '@/lib/utils'
 
 export function AdminPanelScreen() {
@@ -198,7 +199,7 @@ function UsersTab() {
           <Card key={u.id} className={cn('cursor-pointer transition hover:shadow-md', u.banned && 'opacity-50')}>
             <CardContent className="flex items-center justify-between p-3" onClick={() => setSelectedId(u.id)}>
               <div className="flex items-center gap-3">
-                <div className="text-2xl">{u.banned ? '🚫' : '👤'}</div>
+                <div className="text-2xl">{u.banned ? '🚫' : <img src={kidAvatar(u.nickname, 32)} alt={u.nickname} width={32} height={32} className="rounded-full" loading="lazy" />}</div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold">{u.nickname}</span>

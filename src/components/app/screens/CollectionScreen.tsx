@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, ChevronLeft } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { avatarUrl, styleForRarity } from '@/lib/dicebear'
 import type { CharacterInfo } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -81,7 +82,7 @@ export function CollectionScreen() {
         {owned.map((c) => (
           <Card key={c.id} className={cn('overflow-hidden', c.equipped && 'border-2 border-emerald-400')}>
             <div className={cn('flex items-center justify-center bg-gradient-to-br p-4 text-6xl', RARITY_GRADIENT[c.rarity] ?? RARITY_GRADIENT.common)}>
-              <span className="mq-float">{c.artPayload}</span>
+              <img src={avatarUrl(c.key, styleForRarity(c.rarity), 64)} alt={c.name} width={64} height={64} className="mq-float rounded-full" loading="lazy" />
             </div>
             <CardContent className="p-3">
               <h3 className="truncate text-sm font-bold">{c.name}</h3>

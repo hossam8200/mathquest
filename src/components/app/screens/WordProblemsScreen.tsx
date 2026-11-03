@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress'
 import { ChevronLeft, Check, X, RotateCcw, BookOpen, Trophy } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import { generateWordProblemSet, type WordProblem } from '@/lib/word-problems'
+import { avatarUrl } from '@/lib/dicebear'
 import type { Operation } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -162,8 +163,10 @@ export function WordProblemsScreen() {
 
       {/* Word problem card */}
       <Card className="mb-4 overflow-hidden">
-        <div className="bg-gradient-to-r from-sky-400 to-cyan-400 p-2 text-center text-3xl">
-          {current.emoji}
+        <div className="bg-gradient-to-r from-sky-400 to-cyan-400 p-2 flex items-center justify-center gap-2">
+          {/* DiceBear avatar for the word problem character */}
+          <img src={avatarUrl(current.scenario.slice(0, 10), 'fun-emoji', 32)} alt="character" width={32} height={32} className="rounded-full" loading="lazy" />
+          <span className="text-2xl">{current.emoji}</span>
         </div>
         <CardContent className="p-6">
           <div className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">

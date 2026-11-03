@@ -14,6 +14,7 @@ import {
   BarChart, Bar,
 } from 'recharts'
 import { t } from '@/lib/i18n'
+import { avatarUrl } from '@/lib/dicebear'
 import type { ProgressStats, BadgeInfo } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -138,7 +139,7 @@ export function ProgressScreen() {
                 )}
                 title={b.description}
               >
-                <span className="text-2xl">{b.emoji}</span>
+                <img src={avatarUrl(b.key, 'thumbs', 32)} alt={b.name} width={32} height={32} className="rounded-full" loading="lazy" />
                 <span className="text-[9px] font-bold leading-tight">{b.name}</span>
               </div>
             ))}

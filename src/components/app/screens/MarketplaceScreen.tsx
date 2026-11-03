@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Coins, Check, Lock, Sparkles, Clock, Lightbulb } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { avatarUrl, styleForRarity } from '@/lib/dicebear'
 import type { CharacterInfo } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -103,8 +104,8 @@ export function MarketplaceScreen() {
           const rs = RARITY_STYLES[c.rarity] ?? RARITY_STYLES.common
           return (
             <Card key={c.id} className={cn('overflow-hidden border-2', rs.border)}>
-              <div className={cn('flex items-center justify-center bg-gradient-to-br p-4 text-6xl', rs.bg)}>
-                <span className="mq-float">{c.artPayload}</span>
+              <div className={cn('flex items-center justify-center bg-gradient-to-br p-4', rs.bg)}>
+                <img src={avatarUrl(c.key, styleForRarity(c.rarity), 64)} alt={c.name} width={64} height={64} className="mq-float rounded-full" loading="lazy" />
               </div>
               <CardContent className="p-3">
                 <div className="mb-1 flex items-center justify-between">
@@ -175,7 +176,7 @@ function PurchaseConfirm({
       <DialogContent className="max-w-xs">
         <DialogHeader>
           <DialogTitle className="text-center">
-            <span className="mr-1 text-3xl">{char.artPayload}</span>
+            <img src={avatarUrl(char.key, styleForRarity(char.rarity), 48)} alt={char.name} width={48} height={48} className="mx-auto mb-1 rounded-full" loading="lazy" />
             {char.name}
           </DialogTitle>
           <DialogDescription className="text-center">{char.description}</DialogDescription>

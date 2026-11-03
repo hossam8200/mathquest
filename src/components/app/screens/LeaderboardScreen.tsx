@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChevronLeft, Trophy, Crown, Medal } from 'lucide-react'
 import { t } from '@/lib/i18n'
+import { kidAvatar } from '@/lib/dicebear'
 import type { LeaderboardRow } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -71,7 +72,9 @@ function Rows({ rows, lang }: { rows: LeaderboardRow[]; lang: 'en' | 'ar' }) {
             )}>
               {r.rank <= 3 ? <Crown className="h-5 w-5" /> : r.rank}
             </div>
-            <div className="text-2xl">🦊</div>
+            <div className="text-2xl">
+              <img src={kidAvatar(r.nickname, 40)} alt={r.nickname} width={40} height={40} className="rounded-full" loading="lazy" />
+            </div>
             <div className="min-w-0 flex-1">
               <div className="truncate font-bold">
                 {r.nickname}

@@ -20,6 +20,7 @@ import { Progress } from '@/components/ui/progress'
 import { Mascot } from '../gameplay/Mascot'
 import { Coins, Flame, Zap, Map as MapIcon, BookOpen, Lock, Star, Gift } from 'lucide-react'
 import type { Operation, ProgressStats } from '@/types'
+import { kidAvatar, questGiverAvatar } from '@/lib/dicebear'
 import { cn } from '@/lib/utils'
 
 const OPS: { key: Operation; emoji: string; color: string; labelKey: DictKey }[] = [
@@ -140,7 +141,7 @@ export function HomeScreen() {
           onClick={() => { sfx('click'); go({ view: 'worlds' }) }}
         >
           <div className="flex items-center gap-3">
-            <div className="text-3xl mq-bounce">🛡️</div>
+            <img src={questGiverAvatar(activeQuests[0]?.id || 'default', 48)} alt="Quest Giver" width={48} height={48} className="rounded-full ring-2 ring-amber-400 mq-bounce" loading="lazy" />
             <div className="flex-1">
               <div className="font-black text-amber-700 dark:text-amber-300">
                 {lang === 'ar' ? 'مهمة خاصة من ولي الأمر!' : 'Special Quest from Parent!'}
@@ -170,7 +171,14 @@ export function HomeScreen() {
           </p>
         </div>
         <button onClick={() => go({ view: 'collection' })} className="transition hover:scale-110">
-          <Mascot size={56} />
+          <img
+            src={kidAvatar(user.nickname, 56)}
+            alt={user.nickname}
+            width={56}
+            height={56}
+            className="rounded-full ring-2 ring-primary/30"
+            loading="lazy"
+          />
         </button>
       </div>
 
