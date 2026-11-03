@@ -21,6 +21,8 @@ export type ViewKey =
   | 'admin'
   | 'settings'
   | 'guide'
+  | 'word-problems'
+  | 'step-solver'
 
 export interface PublicUser {
   id: string

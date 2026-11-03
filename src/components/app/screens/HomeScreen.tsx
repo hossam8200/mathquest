@@ -300,6 +300,8 @@ export function HomeScreen() {
       {/* Quick links */}
       <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-3">
         <QuickLink emoji="🃏" title={t(lang, 'flashcards')} onClick={() => go({ view: 'decks' })} />
+        <QuickLink emoji="📖" title={t(lang, 'wordProblems' as any) || 'Word Problems'} onClick={() => go({ view: 'word-problems' })} />
+        <QuickLink emoji="💡" title={t(lang, 'stepSolver' as any) || 'Step Solver'} onClick={() => go({ view: 'step-solver' })} />
         <QuickLink emoji="🛒" title={t(lang, 'marketplace')} onClick={() => go({ view: 'marketplace' })} />
         <QuickLink emoji="📅" title={t(lang, 'dailyChallenge')} onClick={() => go({ view: 'daily' })} />
       </div>

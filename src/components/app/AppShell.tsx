@@ -24,6 +24,8 @@ import { LeaderboardScreen } from './screens/LeaderboardScreen'
 import { ParentDashboardScreen } from './screens/ParentDashboardScreen'
 import { AdminPanelScreen } from './screens/AdminPanelScreen'
 import { GuideScreen } from './screens/GuideScreen'
+import { WordProblemsScreen } from './screens/WordProblemsScreen'
+import { StepSolverScreen } from './screens/StepSolverScreen'
 import { AnnouncementBanner } from './common/AnnouncementBanner'
 import type { ViewKey } from '@/types'
 
@@ -87,6 +89,8 @@ function renderView(view: ViewKey): React.ReactNode {
     case 'parent':            return <ParentDashboardScreen />
     case 'admin':             return <AdminPanelScreen />
     case 'guide':             return <GuideScreen />
+    case 'word-problems':     return <WordProblemsScreen />
+    case 'step-solver':       return <StepSolverScreen />
     default:                  return <HomeScreen />
   }
 }

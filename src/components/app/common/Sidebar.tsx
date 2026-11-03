@@ -12,7 +12,7 @@ import type { ViewKey } from '@/types'
 import {
   Home, Map, ShoppingBag, FolderHeart, Layers,
   BarChart3, Trophy, CalendarHeart, ShieldCheck, Settings,
-  ShieldHalf, X, BookOpen,
+  ShieldHalf, X, BookOpen, FileText, Lightbulb,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,6 +27,8 @@ const ITEMS: NavItem[] = [
   { view: 'home',         labelKey: 'home',         icon: <Home className="h-5 w-5" /> },
   { view: 'worlds',       labelKey: 'worlds',       icon: <Map className="h-5 w-5" /> },
   { view: 'decks',        labelKey: 'flashcards',   icon: <Layers className="h-5 w-5" /> },
+  { view: 'word-problems', labelKey: 'wordProblems', icon: <FileText className="h-5 w-5" /> },
+  { view: 'step-solver',   labelKey: 'stepSolver',   icon: <Lightbulb className="h-5 w-5" /> },
   { view: 'marketplace',  labelKey: 'marketplace',  icon: <ShoppingBag className="h-5 w-5" /> },
   { view: 'collection',   labelKey: 'collection',   icon: <FolderHeart className="h-5 w-5" /> },
   { view: 'progress',     labelKey: 'progress',     icon: <BarChart3 className="h-5 w-5" /> },
