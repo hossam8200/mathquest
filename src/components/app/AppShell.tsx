@@ -27,6 +27,7 @@ import { GuideScreen } from './screens/GuideScreen'
 import { WordProblemsScreen } from './screens/WordProblemsScreen'
 import { StepSolverScreen } from './screens/StepSolverScreen'
 import { AnnouncementBanner } from './common/AnnouncementBanner'
+import { BottomNav } from './common/BottomNav'
 import type { ViewKey } from '@/types'
 
 export function AppShell() {
@@ -64,10 +65,11 @@ export function AppShell() {
       <Header />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 overflow-x-hidden">
+        <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
           {renderView(view)}
         </main>
       </div>
+      <BottomNav />
     </div>
   )
 }

@@ -48,15 +48,15 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-1 border-b bg-background/95 px-2 backdrop-blur md:gap-2 md:px-6">
-      {/* Mobile sidebar toggle — proper hamburger icon */}
+      {/* Mobile sidebar toggle — bigger, colored, with label */}
       <Button
-        variant="ghost"
+        variant="default"
         size="icon"
-        className="md:hidden shrink-0"
+        className="md:hidden shrink-0 h-11 w-11 rounded-xl"
         aria-label="Menu"
         onClick={() => setSidebarOpen(!sidebarOpen)}
       >
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" /></svg>
       </Button>
 
       <button
