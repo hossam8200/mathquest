@@ -3,7 +3,7 @@
 // Privacy-safe: only uses nicknames as seeds, no personal data.
 
 export type DiceBearStyle =
-  | 'adventure'    // heroic illustrated characters
+  | 'adventurer'   // heroic illustrated characters
   | 'fun-emoji'    // playful emoji-style
   | 'avataaars'    // human-like avatars
   | 'bottts'       // robot characters
@@ -14,7 +14,7 @@ export type DiceBearStyle =
   | 'personas'     // flat illustrations
   | 'thumbs'       // thumbs up characters
 
-const BASE = 'https://api.dicebear.com/7.x'
+const BASE = 'https://api.dicebear.com/10.x'
 
 /**
  * Generate a DiceBear avatar URL from a seed string.
@@ -23,7 +23,7 @@ const BASE = 'https://api.dicebear.com/7.x'
  * @param size - pixel size (default 80)
  * @returns URL string for the SVG avatar
  */
-export function avatarUrl(seed: string, style: DiceBearStyle = 'adventure', size = 80): string {
+export function avatarUrl(seed: string, style: DiceBearStyle = 'adventurer', size = 80): string {
   const encoded = encodeURIComponent(seed)
   return `${BASE}/${style}/svg?seed=${encoded}&size=${size}&radius=50&backgroundColor=ffd5dc,ffdfbf,d1f4ff,b5e8d4,c0aede,ffcd6e`
 }
@@ -37,7 +37,7 @@ export function styleForRarity(rarity: string): DiceBearStyle {
     case 'common': return 'fun-emoji'
     case 'rare': return 'bottts'
     case 'epic': return 'avataaars'
-    case 'legendary': return 'adventure'
+    case 'legendary': return 'adventurer'
     default: return 'fun-emoji'
   }
 }
@@ -50,7 +50,7 @@ export function styleForOperation(operation: string): DiceBearStyle {
     case 'addition': return 'fun-emoji'
     case 'subtraction': return 'bottts'
     case 'multiplication': return 'avataaars'
-    case 'division': return 'adventure'
+    case 'division': return 'adventurer'
     case 'mixed': return 'lorelei'
     default: return 'fun-emoji'
   }
@@ -58,10 +58,10 @@ export function styleForOperation(operation: string): DiceBearStyle {
 
 /**
  * Get a consistent avatar for a nickname.
- * Uses 'adventure' style for a heroic, kid-friendly look.
+ * Uses 'adventurer' style for a heroic, kid-friendly look.
  */
 export function kidAvatar(nickname: string, size = 80): string {
-  return avatarUrl(nickname, 'adventure', size)
+  return avatarUrl(nickname, 'adventurer', size)
 }
 
 /**
