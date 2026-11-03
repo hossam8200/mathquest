@@ -151,8 +151,8 @@ const SECTIONS: Section[] = [
   {
     id: 'admin',
     image: '/guide/22-admin-panel.png',
-    en: { title: 'Admin Panel', desc: 'Admin-only (login as admin/admin123). View usage stats (users, rounds, sessions, purchases, cards, decks, coins in circulation). Manage characters, users, and bulk-import cards via CSV.' },
-    ar: { title: 'لوحة المشرف', desc: 'للمشرف فقط (سجّل الدخول كـ admin/admin123). شاهد إحصائيات الاستخدام (المستخدمون، الجولات، الجلسات، المشتريات، البطاقات، المجموعات، العملات المتداولة). أدِر الشخصيات والمستخدمين واستورد البطاقات بكميات عبر CSV.' },
+    en: { title: 'Admin Panel', desc: 'Admin-only access. View usage stats (users, rounds, sessions, purchases, cards, decks, coins in circulation). Manage characters, users, and bulk-import cards via CSV.' },
+    ar: { title: 'لوحة المشرف', desc: 'للمشرف فقط. شاهد إحصائيات الاستخدام (المستخدمون، الجولات، الجلسات، المشتريات، البطاقات، المجموعات، العملات المتداولة). أدِر الشخصيات والمستخدمين واستورد البطاقات بكميات عبر CSV.' },
   },
   {
     id: 'home-enhanced',
