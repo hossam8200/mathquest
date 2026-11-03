@@ -46,6 +46,16 @@ export function Header() {
         <span className="hidden sm:inline text-lg">{t(lang, 'appName')}</span>
       </button>
 
+      {/* Equipped character — clickable, goes to Collection */}
+      <button
+        onClick={() => go({ view: 'collection' })}
+        className="hidden sm:flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-sm font-bold transition hover:bg-muted/80"
+        aria-label={lang === 'ar' ? 'شخصيتي' : 'My Character'}
+      >
+        <span className="text-lg">{user.avatarCharacterId ? '🦊' : '🦊'}</span>
+        <span className="hidden md:inline">{lang === 'ar' ? 'شخصيتي' : 'Character'}</span>
+      </button>
+
       <div className="ml-auto flex items-center gap-1 md:gap-2">
         {/* Guide — visible to all logged-in users */}
         <Button
