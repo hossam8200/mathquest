@@ -154,6 +154,54 @@ const SECTIONS: Section[] = [
     en: { title: 'Admin Panel', desc: 'Admin-only (login as admin/admin123). View usage stats (users, rounds, sessions, purchases, cards, decks, coins in circulation). Manage characters, users, and bulk-import cards via CSV.' },
     ar: { title: 'لوحة المشرف', desc: 'للمشرف فقط (سجّل الدخول كـ admin/admin123). شاهد إحصائيات الاستخدام (المستخدمون، الجولات، الجلسات، المشتريات، البطاقات، المجموعات، العملات المتداولة). أدِر الشخصيات والمستخدمين واستورد البطاقات بكميات عبر CSV.' },
   },
+  {
+    id: 'home-enhanced',
+    image: '/guide/25-home-enhanced.png',
+    en: { title: 'Enhanced Home Dashboard', desc: 'The redesigned home now shows your unique DiceBear avatar, character-driven greeting ("Foxy is ready for a quest!"), a "Today" card with daily card goal progress, three simultaneous daily challenges (Memory Master, Sharp Shooter, Level Crusher), and a one-tap "Continue Your Quest" button. Uses the kid-friendly Nunito font.' },
+    ar: { title: 'الصفحة الرئيسية المطورة', desc: 'تعرض الآن صورتك الرمزية الفريدة من DiceBear، تحية باسم الشخصية، بطاقة "اليوم" مع تقدم الهدف اليومي، ثلاثة تحديات يومية متزامنة، وزر "تابع مهمتك" بنقرة واحدة. تستخدم خط Nunito المناسب للأطفال.' },
+  },
+  {
+    id: 'word-problems',
+    image: '/guide/26-word-problems.png',
+    en: { title: 'Word Problems', desc: 'Practice math in real-world scenarios! Pick an operation (or Mixed) and answer 5 word problems with multiple-choice answers. Each problem tells a story (shopping, cooking, sports, school) with age-appropriate numbers. Get immediate feedback with a solution explanation showing the real-world math.' },
+    ar: { title: 'المسائل الكلامية', desc: 'تدرب على الرياضيات في مواقف حقيقية! اختر عملية وأجب عن 5 مسائل كلامية مع خيارات متعددة. كل مسألة تروي قصة (تسوق، طبخ، رياضة) مع أرقام مناسبة للعمر. احصل على تغذية راجعة فورية مع شرح الحل.' },
+  },
+  {
+    id: 'step-solver',
+    image: '/guide/27-step-solver.png',
+    en: { title: 'Step-by-Step Solver', desc: 'Enter any two numbers and see HOW to solve it — not just the answer! Shows the method name (Partial Products, Count-Up, Repeated Subtraction) and numbered steps breaking down the process. Includes one-click examples (7×8, 56÷7, 125+48) and a Random button. Teaches the thinking process behind each operation.' },
+    ar: { title: 'حل خطوة بخطوة', desc: 'أدخل رقمين وشاهد كيف تحل المسألة خطوة بخطوة — ليس فقط الإجابة! يعرض اسم الطريقة والخطوات المرقمة. يتضمن أمثلة جاهزة وزر عشوائي. يُعلّم طريقة التفكير وراء كل عملية.' },
+  },
+  {
+    id: 'leaderboard-avatars',
+    image: '/guide/28-leaderboard-avatars.png',
+    en: { title: 'DiceBear Avatars', desc: 'Every kid now has a unique avatar generated from their nickname using the free DiceBear API. No more identical foxes — each player gets a distinct, colorful character. Avatars appear on the leaderboard, home screen, header bar, marketplace, parent dashboard, and admin panel. 100% privacy-safe (no photos, no personal data — just nickname-generated SVG art).' },
+    ar: { title: 'صور رمزية فريدة', desc: 'كل طفل لديه الآن صورة رمزية فريدة مُولّدة من اسمه المستعار عبر DiceBear. لا مزيد من الثعالب المتطابقة. تظهر الصور في المتصدرين والرئيسية والترويسة والمتجر ولوحة ولي الأمر. آمنة 100% (لا صور، لا بيانات شخصية).' },
+  },
+  {
+    id: 'parent-enhanced',
+    image: '/guide/29-parent-enhanced.png',
+    en: { title: 'Enhanced Parent Dashboard', desc: 'Now includes: weekly study time chart, accuracy trend chart, 14-day study calendar heatmap, "How We Teach This" expandable micro-guides (teaching tips + home activities), one-click Parent Quests (child gets a glowing notification with bonus coins), printable Teacher Report (anonymized, one page), Family Goals with real-world reward suggestions, Send Encouragement (grant bonus coins), Privacy badge + Download My Data + Reset All Progress.' },
+    ar: { title: 'لوحة ولي الأمر المطورة', desc: 'تتضمن الآن: مخطط وقت الدراسة الأسبوعي، اتجاه الدقة، تقويم الدراسة، نصائح تعليمية قابلة للتوسيع، مهام من ولي الأمر (إشعار + عملات)، تقرير للمعلم (مجهول الهوية)، أهداف عائلية مع مكافآت، إرسال تشجيع، شارة الخصوصية + تحميل البيانات + إعادة التعيين.' },
+  },
+  {
+    id: 'admin-enhanced',
+    image: '/guide/30-admin-enhanced.png',
+    en: { title: 'Admin Analytics Dashboard', desc: 'The admin panel now features: user growth chart (14 days), daily active users chart (7 days), most played levels, most popular characters, coin flow chart (earned vs spent), 6 summary stat cards, and 7 tabs (Stats, Users, Characters, Levels, Badges, Cards, Settings). Search users, click any user for full detail view.' },
+    ar: { title: 'لوحة تحليلات المشرف', desc: 'تتضمن: مخطط نمو المستخدمين، المستخدمون النشطون يومياً، أكثر المستويات لعباً، أكثر الشخصيات شعبية، تدفق العملات، 6 بطاقات إحصائية، و7 تبويبات. ابحث عن المستخدمين وانقر على أي مستخدم لعرض التفاصيل الكاملة.' },
+  },
+  {
+    id: 'admin-user-detail',
+    image: '/guide/31-admin-user-detail.png',
+    en: { title: 'Admin User Management', desc: 'Click any user to see: stats grid (coins, rounds, badges, streak), Grant Coins (quick buttons: 10/50/100/500), Reset Password, Change Age Band, Ban/Unban toggle, recent transactions log, and earned badges. Bulk Grant feature sends coins to ALL active users at once.' },
+    ar: { title: 'إدارة المستخدمين', desc: 'انقر على أي مستخدم لعرض: الإحصائيات، منح العملات، إعادة تعيين كلمة المرور، تغيير الفئة العمرية، حظر/إلغاء الحظر، سجل المعاملات، والأوسمة. ميزة المنح الجماعي ترسل عملات لجميع المستخدمين.' },
+  },
+  {
+    id: 'marketplace-avatars',
+    image: '/guide/32-marketplace-avatars.png',
+    en: { title: 'Marketplace with DiceBear Art', desc: 'Characters now feature unique DiceBear-generated art instead of emoji. Each rarity tier uses a different art style: Common → fun-emoji, Rare → bottts (robots), Epic → avataaars (human-like), Legendary → adventurer (heroic). Each character key generates a consistent, unique avatar. Professional-looking art with zero image storage.' },
+    ar: { title: 'المتجر بصور DiceBear', desc: 'الشخصيات الآن بفن فريد من DiceBear بدلاً من الإيموجي. كل مستوى ندرة يستخدم أسلوباً مختلفاً: عادي ← fun-emoji، نادر ← bottts، ملحمي ← avataaars، أسطوري ← adventurer. فن احترافي بدون تخزين صور.' },
+  },
 ]
 
 export function GuideScreen() {
