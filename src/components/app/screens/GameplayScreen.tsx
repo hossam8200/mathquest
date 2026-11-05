@@ -67,10 +67,15 @@ export function GameplayScreen() {
   const [showExtraHint, setShowExtraHint] = useState(false)
   const [hintLevel, setHintLevel] = useState(0) // 0=none, 1=basic, 2=detailed, 3=visual aid
 
-  // Equipped character perk (extra time). Fetched once, cached by React Query.
-  const perkSeconds = useEquippedPerkSeconds()
+  // Equipped character perk (full info for all perk types)
+  const perk = useEquippedPerk()
   const effectiveTimeRef = useRef(TIME_PER_QUESTION)
-  effectiveTimeRef.current = TIME_PER_QUESTION + perkSeconds
+  effectiveTimeRef.current = perk.type === 'no_timer' ? 9999 : TIME_PER_QUESTION + perk.seconds
+
+  // Perk-specific state
+  const [luckyCatUsed, setLuckyCatUsed] = useState(false) // second_chance perk
+  const [detectiveSecondChance, setDetectiveSecondChance] = useState(false) // mistake perk
+  const [perkMessage, setPerkMessage] = useState<string | null>(null) // show perk activation messages
   const [complete, setComplete] = useState<LevelCompleteData | null>(null)
 
   const questionStartRef = useRef<number>(Date.now())
@@ -99,6 +104,7 @@ export function GameplayScreen() {
       setIdx(0); setAnswers([]); setStreak(0); setBestStreak(0)
       setFeedback(null); setUserAnswer(''); setSelectedOption(null)
       setWrongByOp({}); setShowExtraHint(false); setHintLevel(0)
+      setLuckyCatUsed(false); setDetectiveSecondChance(false); setPerkMessage(null)
       answeredRef.current = false
       try {
         const r = await fetch(`/api/gameplay/questions?levelId=${config!.levelId}`, { cache: 'no-store' })
@@ -144,9 +150,12 @@ export function GameplayScreen() {
       })
     }, 1000)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [config, feedback, loading, complete, idx])
+  }, [config, feedback, loading, complete, idx, perk.type])
 
   const current = questions[idx]
+
+  // Generate visual aid for Number Wizard perk
+  const visualAid = perk.type === 'visual' && current ? generateVisualAid(current.operation, current.a, current.b) : null
 
   function handleTimeout() {
     if (answeredRef.current) return
@@ -179,12 +188,46 @@ export function GameplayScreen() {
 
     const q = current
     const ua = value === null ? null : String(value)
-    const correct = ua !== null && Math.abs(Number(ua) - q.answer) < 1e-6
+    let correct = ua !== null && Math.abs(Number(ua) - q.answer) < 1e-6
+
+    // ── Character perks that modify the result ──
+
+    // Lucky Cat (second_chance): auto-correct one wrong answer per level
+    if (!correct && perk.type === 'second_chance' && !luckyCatUsed) {
+      setLuckyCatUsed(true)
+      correct = true
+      setPerkMessage('🐱 Lucky Cat caught that mistake! Answer saved as correct.')
+      sfx('match')
+    }
+
+    // Mistake Detective: on wrong answer, give a clue + second chance
+    if (!correct && perk.type === 'mistake' && !detectiveSecondChance) {
+      setDetectiveSecondChance(true)
+      answeredRef.current = false
+      setPerkMessage('🕵️ Detective: "Not right! But let me help — think about what ' + q.operation + ' really means. Try again!"')
+      setHintLevel(3)
+      setFeedback(null)
+      setSelectedOption(null)
+      setUserAnswer('')
+      return // Don't record yet — let them try again
+    }
+
+    // Encouragement Fox: show encouraging message on wrong answers
+    let encourageMsg: string | null = null
+    if (!correct && perk.type === 'encourage') {
+      const msgs = [
+        '🦊 Almost! Mistakes help your brain grow!',
+        '🦊 Good try! Every expert was once a beginner!',
+        '🦊 Keep going! You\'re learning!',
+        '🦊 That\'s okay! Let\'s figure it out!',
+      ]
+      encourageMsg = msgs[Math.floor(Math.random() * msgs.length)]
+    }
 
     setFeedback({
       isCorrect: correct,
       correctAnswer: String(q.answer),
-      explanation: q.explanation,
+      explanation: encourageMsg ? `${encourageMsg}\n${q.explanation ?? ''}` : q.explanation,
     })
 
     if (correct) {
@@ -223,6 +266,7 @@ export function GameplayScreen() {
     setFeedback(null)
     setShowExtraHint(false)
     setHintLevel(0)
+    setPerkMessage(null)
     answeredRef.current = false
     setTimeLeft(effectiveTimeRef.current)
     questionStartRef.current = Date.now()
@@ -339,6 +383,19 @@ export function GameplayScreen() {
           <div className="my-4 text-5xl font-black tracking-tight md:text-6xl">
             {current.prompt} <span className="text-primary">= ?</span>
           </div>
+          {/* Perk activation message (Lucky Cat, Detective, etc.) */}
+          {perkMessage && (
+            <div className="mx-auto mb-3 max-w-md rounded-xl border-2 border-amber-400 bg-amber-50 p-3 text-center text-sm font-bold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 mq-pop">
+              {perkMessage}
+            </div>
+          )}
+          {/* Number Wizard visual aid */}
+          {visualAid && (
+            <div className="mx-auto mb-3 max-w-md rounded-xl border-2 border-fuchsia-300 bg-fuchsia-50 p-3 text-center text-xs dark:bg-fuchsia-950/20">
+              <div className="font-bold text-fuchsia-600">🧙 Visual Aid:</div>
+              <div className="mt-1 font-mono text-sm">{visualAid}</div>
+            </div>
+          )}
           {current.hint && (
             <div className="mx-auto mb-3 max-w-xs rounded-lg bg-muted px-3 py-1.5 text-xs text-muted-foreground">
               💡 {current.hint}
@@ -453,8 +510,8 @@ export function GameplayScreen() {
   )
 }
 
-// Fetches the equipped character's time perk (seconds added to timer).
-function useEquippedPerkSeconds(): number {
+// Fetches the equipped character's full perk info.
+function useEquippedPerk(): { type: string; value: number | null; seconds: number } {
   const { user } = useCurrentUser()
   const { data } = useQuery<{ characters: CharacterInfo[] }>({
     queryKey: ['marketplace'],
@@ -467,6 +524,33 @@ function useEquippedPerkSeconds(): number {
     staleTime: 60_000,
   })
   const char = data?.characters.find((c) => c.id === user?.avatarCharacterId)
-  if (char?.perkType === 'time' && char.perkValue) return char.perkValue
-  return 0
+  const type = char?.perkType ?? 'none'
+  const value = char?.perkValue ?? null
+  // Time perk adds seconds; no_timer removes timer entirely
+  let seconds = 0
+  if (type === 'time' && value) seconds = value
+  return { type, value, seconds }
+}
+
+// Generate visual aid text for the Number Wizard perk
+function generateVisualAid(operation: string, a: number, b: number): string {
+  const dots = (n: number, max = 15) => n <= max ? '🔵'.repeat(n) : `(${n} dots)`
+  switch (operation) {
+    case 'addition':
+      if (a + b <= 20) return `${dots(a)} + ${dots(b)} = ${dots(a + b)}`
+      return `Break: ${a} = ${Math.floor(a / 10) * 10} + ${a % 10}, ${b} = ${Math.floor(b / 10) * 10} + ${b % 10}`
+    case 'subtraction':
+      if (a <= 15) return `${dots(a)} → remove ${dots(b)} → ${dots(a - b)}`
+      return `Count up from ${b}: ${b} → ${a} = ${a - b} steps`
+    case 'multiplication':
+      if (b <= 6) {
+        const groups = Array(b).fill(`[${dots(a, 6)}]`).join(' ')
+        return `${b} groups of ${a}: ${groups}`
+      }
+      return `${a} × ${b}: think (${a} × ${Math.floor(b / 2)}) + (${a} × ${b - Math.floor(b / 2)})`
+    case 'division':
+      return `Share ${a} into ${b} groups: each gets ${Math.floor(a / b)}`
+    default:
+      return ''
+  }
 }

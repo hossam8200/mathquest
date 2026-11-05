@@ -63,8 +63,8 @@ function difficultyFor(n: number): number {
 // perkType, perkValue.
 const CHARACTERS = [
   // Common — cheap, fun animal friends
-  { key: 'fox',      name: 'Foxy',        description: 'A clever fox who loves puzzles.',          rarity: 'common',    price: 0,   artKind: 'emoji', artPayload: '🦊', perkType: 'none',  perkValue: null },
-  { key: 'cat',      name: 'Whiskers',    description: 'A curious kitten learning to count.',     rarity: 'common',    price: 50,  artKind: 'emoji', artPayload: '🐱', perkType: 'none',  perkValue: null },
+  { key: 'fox',      name: 'Foxy',        description: 'The Encouragement Fox! Shows uplifting messages after mistakes and gives +5 coins for trying.', rarity: 'common',    price: 0,   artKind: 'emoji', artPayload: '🦊', perkType: 'encourage',  perkValue: 5 },
+  { key: 'cat',      name: 'Lucky Cat',   description: 'The Lucky Cat! Auto-corrects one wrong answer per level — "I caught that mistake for you!"', rarity: 'common',    price: 150,  artKind: 'emoji', artPayload: '🐱', perkType: 'second_chance',  perkValue: 1 },
   { key: 'dog',      name: 'Biscuit',     description: 'A loyal pup who cheers you on.',          rarity: 'common',    price: 50,  artKind: 'emoji', artPayload: '🐶', perkType: 'none',  perkValue: null },
   { key: 'panda',    name: 'Bamboo',      description: 'A sleepy panda who never gives up.',      rarity: 'common',    price: 80,  artKind: 'emoji', artPayload: '🐼', perkType: 'none',  perkValue: null },
   { key: 'frog',     name: 'Hopper',      description: 'A bouncy frog with quick reflexes.',      rarity: 'common',    price: 80,  artKind: 'emoji', artPayload: '🐸', perkType: 'none',  perkValue: null },
@@ -72,19 +72,21 @@ const CHARACTERS = [
   { key: 'monkey',   name: 'Banana',      description: 'A cheeky monkey who swings through math.', rarity: 'common',  price: 100, artKind: 'emoji', artPayload: '🐵', perkType: 'none',  perkValue: null },
   { key: 'rabbit',   name: 'Cottontail',  description: 'A speedy rabbit who multiplies fast.',   rarity: 'common',    price: 120, artKind: 'emoji', artPayload: '🐰', perkType: 'none',  perkValue: null },
 
-  // Rare — give small perks
+  // Rare — learning-powered perks
+  { key: 'owl',      name: 'Hint Owl',    description: 'The Hint Owl! Shows 3 levels of progressive hints — general tip → partial solution → full breakdown.', rarity: 'rare', price: 250, artKind: 'emoji', artPayload: '🦉', perkType: 'hint',  perkValue: 3 },
+  { key: 'turtle',   name: 'Slow Turtle', description: 'The Slow Turtle! Removes the timer entirely — take all the time you need, focus on accuracy.', rarity: 'rare', price: 250, artKind: 'emoji', artPayload: '🐢', perkType: 'no_timer',  perkValue: 1 },
+  { key: 'detective',name: 'Detective',   description: 'The Mistake Detective! Wrong answers become puzzles — get a clue and a second chance to fix it!', rarity: 'rare', price: 300, artKind: 'emoji', artPayload: '🕵️', perkType: 'mistake',  perkValue: 1 },
   { key: 'robot',    name: 'Bolt',        description: 'A friendly robot that gives +5 seconds per question.', rarity: 'rare', price: 250, artKind: 'emoji', artPayload: '🤖', perkType: 'time',  perkValue: 5 },
-  { key: 'owl',      name: 'Sage',        description: 'A wise owl that shows an extra hint when you need it.', rarity: 'rare', price: 250, artKind: 'emoji', artPayload: '🦉', perkType: 'hint',  perkValue: 1 },
   { key: 'unicorn',  name: 'Sparkle',     description: 'A magical unicorn that gives +5 seconds.', rarity: 'rare',    price: 300, artKind: 'emoji', artPayload: '🦄', perkType: 'time',  perkValue: 5 },
-  { key: 'lion',     name: 'Brave',       description: 'A courageous lion that gives an extra hint.', rarity: 'rare', price: 300, artKind: 'emoji', artPayload: '🦁', perkType: 'hint',  perkValue: 1 },
   { key: 'dolphin',  name: 'Splash',      description: 'A clever dolphin that gives +5 seconds.', rarity: 'rare',    price: 280, artKind: 'emoji', artPayload: '🐬', perkType: 'time',  perkValue: 5 },
   { key: 'tiger',    name: 'Stripe',      description: 'A bold tiger that gives an extra hint.', rarity: 'rare',     price: 320, artKind: 'emoji', artPayload: '🐯', perkType: 'hint',  perkValue: 1 },
 
-  // Epic
+  // Epic — powerful learning perks
+  { key: 'wizard',   name: 'Number Wizard',description: 'The Number Wizard! Shows visual aids for every question — arrays, groups, number lines. Perfect for visual learners!', rarity: 'epic', price: 600, artKind: 'emoji', artPayload: '🧙', perkType: 'visual',  perkValue: 1 },
   { key: 'dragon',   name: 'Ember',       description: 'A mighty dragon that gives +10 seconds and a hint.', rarity: 'epic', price: 600, artKind: 'emoji', artPayload: '🐲', perkType: 'time',  perkValue: 10 },
   { key: 'alien',    name: 'Zyx',         description: 'A galactic explorer with +10 seconds.', rarity: 'epic',    price: 600, artKind: 'emoji', artPayload: '👽', perkType: 'time',  perkValue: 10 },
-  { key: 'wizard',   name: 'Mystic',      description: 'A magical wizard with an extra hint.', rarity: 'epic',     price: 650, artKind: 'emoji', artPayload: '🧙', perkType: 'hint',  perkValue: 1 },
   { key: 'astronaut',name: 'Cosmo',       description: 'A brave astronaut with +10 seconds.', rarity: 'epic',     price: 700, artKind: 'emoji', artPayload: '🧑‍🚀', perkType: 'time', perkValue: 10 },
+  { key: 'lion',     name: 'Brave',       description: 'A courageous lion that gives an extra hint.', rarity: 'epic', price: 650, artKind: 'emoji', artPayload: '🦁', perkType: 'hint',  perkValue: 2 },
 
   // Legendary
   { key: 'phoenix',  name: 'Blaze',       description: 'A legendary phoenix that rises with +15 seconds.', rarity: 'legendary', price: 1200, artKind: 'emoji', artPayload: '🔥', perkType: 'time', perkValue: 15 },
@@ -180,7 +182,7 @@ async function main() {
         create: { id: `builtin-${op}-${band}`, title, description: `${label} for ages ${band}`, coverIcon: icon, operation: op, ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
       })
       // Generate ~30 unique cards
-      const cards = generateCardsFor(op, band, 30)
+      const cards = generateCardsFor(op, band, 50)
       // Wipe existing cards then recreate (idempotent)
       await db.card.deleteMany({ where: { deckId: deck.id } })
       for (let i = 0; i < cards.length; i++) {
@@ -208,7 +210,7 @@ async function main() {
       update: { title, description: `Mixed math for ages ${band}`, coverIcon: '🎲', operation: 'mixed', ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
       create: { id: `builtin-mixed-${band}`, title, description: `Mixed math for ages ${band}`, coverIcon: '🎲', operation: 'mixed', ageBand: band, isBuiltIn: true, isPublic: true, ownerId: null },
     })
-    const cards = generateCardsFor('mixed', band, 30)
+    const cards = generateCardsFor('mixed', band, 50)
     await db.card.deleteMany({ where: { deckId: deck.id } })
     for (let i = 0; i < cards.length; i++) {
       await db.card.create({
@@ -247,6 +249,104 @@ async function main() {
       await db.card.create({
         data: { deckId: ttDeck.id, front: `${a} × ${b}`, back: String(a * b), hint: undefined, explanation: undefined, sortOrder: ttIdx++ },
       })
+      cardCount++
+    }
+  }
+  deckCount++
+
+  // ── New special decks for expanded learning ──
+
+  // Doubles & Near Doubles (8-10)
+  const ddDeck = await db.deck.upsert({
+    where: { id: 'builtin-doubles-8-10' },
+    update: { title: 'Doubles & Near Doubles', description: 'Master doubles (7+7) and near doubles (7+8)', coverIcon: '🔄', operation: 'addition', ageBand: '8-10', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-doubles-8-10', title: 'Doubles & Near Doubles', description: 'Master doubles (7+7) and near doubles (7+8)', coverIcon: '🔄', operation: 'addition', ageBand: '8-10', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: ddDeck.id } })
+  let ddIdx = 0
+  for (let i = 2; i <= 15; i++) {
+    await db.card.create({ data: { deckId: ddDeck.id, front: `${i} + ${i}`, back: String(i * 2), hint: 'Double it!', explanation: `${i} doubled = ${i * 2}`, sortOrder: ddIdx++ } })
+    cardCount++
+    await db.card.create({ data: { deckId: ddDeck.id, front: `${i} + ${i + 1}`, back: String(i * 2 + 1), hint: 'Think: double then add 1', explanation: `${i}+${i}=${i*2}, +1=${i*2+1}`, sortOrder: ddIdx++ } })
+    cardCount++
+  }
+  deckCount++
+
+  // Number Bonds to 100 (8-10)
+  const nbDeck = await db.deck.upsert({
+    where: { id: 'builtin-bonds-100' },
+    update: { title: 'Number Bonds to 100', description: 'Pairs that make 100', coverIcon: '💯', operation: 'addition', ageBand: '8-10', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-bonds-100', title: 'Number Bonds to 100', description: 'Pairs that make 100', coverIcon: '💯', operation: 'addition', ageBand: '8-10', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: nbDeck.id } })
+  const bonds = [10, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 5, 15, 33, 37, 42]
+  for (let i = 0; i < bonds.length; i++) {
+    await db.card.create({ data: { deckId: nbDeck.id, front: `${bonds[i]} + ? = 100`, back: String(100 - bonds[i]), hint: 'What adds to 100?', explanation: `${bonds[i]} + ${100 - bonds[i]} = 100`, sortOrder: i } })
+    cardCount++
+  }
+  deckCount++
+
+  // Percentages (14-16)
+  const pctDeck = await db.deck.upsert({
+    where: { id: 'builtin-percentages' },
+    update: { title: 'Percentages', description: 'Convert and calculate percentages', coverIcon: '%', operation: 'division', ageBand: '14-16', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-percentages', title: 'Percentages', description: 'Convert and calculate percentages', coverIcon: '%', operation: 'division', ageBand: '14-16', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: pctDeck.id } })
+  const pctValues = [10, 20, 25, 50, 75, 15, 5, 30, 40, 60, 35, 45, 80, 90, 95, 33, 12, 8, 22, 18]
+  for (let i = 0; i < pctValues.length; i++) {
+    const pct = pctValues[i]
+    const of200 = Math.round(200 * pct / 100)
+    await db.card.create({ data: { deckId: pctDeck.id, front: `${pct}% of 200`, back: String(of200), hint: `${pct}% = ${pct}/100`, explanation: `${pct}/100 × 200 = ${of200}`, sortOrder: i } })
+    cardCount++
+  }
+  deckCount++
+
+  // Negative Numbers (14-16)
+  const negDeck = await db.deck.upsert({
+    where: { id: 'builtin-negatives' },
+    update: { title: 'Negative Numbers', description: 'Add and subtract with negative numbers', coverIcon: '➖', operation: 'subtraction', ageBand: '14-16', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-negatives', title: 'Negative Numbers', description: 'Add and subtract with negative numbers', coverIcon: '➖', operation: 'subtraction', ageBand: '14-16', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: negDeck.id } })
+  const negPairs = [[5,-3],[-5,3],[-7,-8],[10,-15],[-20,5],[-12,-3],[-6,6],[8,-8],[-4,-4],[15,-20],[-9,2],[-11,-5],[3,-7],[-2,-9],[-14,6],[7,-12],[-18,3],[-1,-1],[-25,10],[-8,-7]]
+  for (let i = 0; i < negPairs.length; i++) {
+    const [a, b] = negPairs[i]
+    await db.card.create({ data: { deckId: negDeck.id, front: `${a} + ${b}`, back: String(a + b), hint: 'Think: number line', explanation: `${a} + ${b} = ${a + b}`, sortOrder: i } })
+    cardCount++
+  }
+  deckCount++
+
+  // Rounding & Estimation (11-13)
+  const roundDeck = await db.deck.upsert({
+    where: { id: 'builtin-rounding' },
+    update: { title: 'Rounding & Estimation', description: 'Round to nearest 10, 100, 1000', coverIcon: '📐', operation: 'mixed', ageBand: '11-13', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-rounding', title: 'Rounding & Estimation', description: 'Round to nearest 10, 100, 1000', coverIcon: '📐', operation: 'mixed', ageBand: '11-13', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: roundDeck.id } })
+  const roundNums = [23, 47, 82, 156, 349, 781, 1234, 5678, 89, 345, 678, 912, 4567, 234, 789, 1357, 2468, 3579, 864, 192]
+  for (let i = 0; i < roundNums.length; i++) {
+    const n = roundNums[i]
+    const to10 = Math.round(n / 10) * 10
+    const to100 = Math.round(n / 100) * 100
+    await db.card.create({ data: { deckId: roundDeck.id, front: `Round ${n} to nearest 10`, back: String(to10), hint: 'Look at the ones digit', explanation: `${n} → ${to10} (nearest 10)`, sortOrder: i * 2 } })
+    cardCount++
+    await db.card.create({ data: { deckId: roundDeck.id, front: `Round ${n} to nearest 100`, back: String(to100), hint: 'Look at the tens digit', explanation: `${n} → ${to100} (nearest 100)`, sortOrder: i * 2 + 1 } })
+    cardCount++
+  }
+  deckCount++
+
+  // Times Tables 11-15 (11-13)
+  const tt11Deck = await db.deck.upsert({
+    where: { id: 'builtin-times-11-15' },
+    update: { title: 'Times Tables 11-15', description: 'Extended times tables 11 through 15', coverIcon: '✖️', operation: 'multiplication', ageBand: '11-13', isBuiltIn: true, isPublic: true, ownerId: null },
+    create: { id: 'builtin-times-11-15', title: 'Times Tables 11-15', description: 'Extended times tables 11 through 15', coverIcon: '✖️', operation: 'multiplication', ageBand: '11-13', isBuiltIn: true, isPublic: true, ownerId: null },
+  })
+  await db.card.deleteMany({ where: { deckId: tt11Deck.id } })
+  let tt11Idx = 0
+  for (const a of [11, 12, 13, 14, 15]) {
+    for (const b of [2, 3, 4, 5, 6, 7, 8, 9]) {
+      await db.card.create({ data: { deckId: tt11Deck.id, front: `${a} × ${b}`, back: String(a * b), hint: undefined, explanation: undefined, sortOrder: tt11Idx++ } })
       cardCount++
     }
   }
