@@ -527,7 +527,7 @@ function useEquippedPerk(): { type: string; value: number | null; seconds: numbe
       return r.json()
     },
     enabled: !!user,
-    staleTime: 60_000,
+    staleTime: 0, // Always fetch fresh — never use stale data for perks
   })
   const char = data?.characters.find((c) => c.id === user?.avatarCharacterId)
   const type = char?.perkType ?? 'none'
