@@ -136,7 +136,8 @@ export function GameplayScreen() {
 
   // Timer
   useEffect(() => {
-    if (!config?.timerEnabled || feedback || loading || complete) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!config?.timerEnabled || perk.type === 'no_timer' || feedback || loading || complete) return
     timerRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -355,13 +356,18 @@ export function GameplayScreen() {
 
       {/* Stats row */}
       <div className="mb-4 flex justify-end gap-2">
-        {config.timerEnabled && (
+        {config.timerEnabled && perk.type !== 'no_timer' && (
           <div className={cn(
             'flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold',
             timeLeft <= 5 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30' : 'bg-muted'
           )}>
             <Clock className="h-4 w-4" />
             {timeLeft}s
+          </div>
+        )}
+        {perk.type === 'no_timer' && (
+          <div className="flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-600 dark:bg-emerald-900/30">
+            🐢 No timer
           </div>
         )}
         <div className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
