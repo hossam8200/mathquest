@@ -1,21 +1,40 @@
 'use client'
 
 // Settings screen: sound, dark mode, language (EN/AR with RTL), text scale.
-// Persists to the local store immediately; future P6 will also PATCH the user row.
+// Saves preferences to the server via /api/auth/update-settings so they persist
+// across sessions and don't get overwritten by HomeScreen's hydrateFromUser().
 
 import { useSettingsStore } from '@/store/settings-store'
 import { useSound } from '@/hooks/use-sound'
+import { useToast } from '@/hooks/use-toast'
 import { t } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { useCurrentUser } from '@/hooks/use-current-user'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function SettingsScreen() {
   const s = useSettingsStore()
   const sfx = useSound()
+  const { toast } = useToast()
   const { user } = useCurrentUser()
+  const qc = useQueryClient()
+
+  // Save to server whenever a preference changes
+  async function saveToServer(data: { language?: string; darkMode?: boolean; textScale?: string; soundEnabled?: boolean }) {
+    try {
+      await fetch('/api/auth/update-settings', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      // Refresh the user query so /api/auth/me returns updated preferences
+      qc.invalidateQueries({ queryKey: ['me'] })
+    } catch {
+      // Best-effort — local store already has the change
+    }
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:py-10 space-y-4">
@@ -32,7 +51,11 @@ export function SettingsScreen() {
             <Switch
               id="sound"
               checked={s.soundEnabled}
-              onCheckedChange={(v) => { s.setSound(v); if (v) sfx('click') }}
+              onCheckedChange={(v) => {
+                s.setSound(v)
+                if (v) sfx('click')
+                saveToServer({ soundEnabled: v })
+              }}
             />
           </div>
         </CardContent>
@@ -45,7 +68,14 @@ export function SettingsScreen() {
         <CardContent>
           <div className="flex items-center justify-between">
             <Label htmlFor="dark">{t(s.lang, 'darkMode')}</Label>
-            <Switch id="dark" checked={s.darkMode} onCheckedChange={(v) => s.setDarkMode(v)} />
+            <Switch
+              id="dark"
+              checked={s.darkMode}
+              onCheckedChange={(v) => {
+                s.setDarkMode(v)
+                saveToServer({ darkMode: v })
+              }}
+            />
           </div>
         </CardContent>
       </Card>
@@ -57,7 +87,11 @@ export function SettingsScreen() {
         <CardContent>
           <RadioGroup
             value={s.lang}
-            onValueChange={(v) => s.setLang(v as 'en' | 'ar')}
+            onValueChange={(v) => {
+              s.setLang(v as 'en' | 'ar')
+              saveToServer({ language: v })
+              toast({ title: v === 'ar' ? 'تم تغيير اللغة' : 'Language changed' })
+            }}
             className="flex gap-4"
           >
             <div className="flex items-center gap-2">
@@ -79,7 +113,10 @@ export function SettingsScreen() {
         <CardContent>
           <RadioGroup
             value={s.textScale}
-            onValueChange={(v) => s.setTextScale(v as 'sm' | 'md' | 'lg')}
+            onValueChange={(v) => {
+              s.setTextScale(v as 'sm' | 'md' | 'lg')
+              saveToServer({ textScale: v })
+            }}
             className="flex gap-4"
           >
             <div className="flex items-center gap-2">
