@@ -5,6 +5,7 @@
 // Score = base - time penalty - mistake penalty.
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/store/app-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { useSound } from '@/hooks/use-sound'
@@ -38,6 +39,7 @@ export function MatchGameScreen() {
   const deckId = useAppStore((s) => s.selectedDeckId)
   const sfx = useSound()
   const { toast } = useToast()
+  const qc = useQueryClient()
 
   const [loading, setLoading] = useState(true)
   const [pairs, setPairs] = useState<Pair[]>([])
@@ -156,10 +158,15 @@ export function MatchGameScreen() {
       setResult({ score: data.score, points: data.points, coins: data.coins, timeSec })
       setDone(true)
       if (data.coins > 0) toast({ title: `+${data.coins} coins!` })
+      // Invalidate caches so everything updates
+      qc.invalidateQueries({ queryKey: ['decks'] })
+      qc.invalidateQueries({ queryKey: ['daily-multi'] })
+      qc.invalidateQueries({ queryKey: ['me'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
     } catch {
       setDone(true)
     }
-  }, [startTime, pairs.length, mistakes, deckId, sfx, toast])
+  }, [startTime, pairs.length, mistakes, deckId, sfx, toast, qc])
   useEffect(() => { finishRef.current = finish }, [finish])
 
   function nextLevel() {

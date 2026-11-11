@@ -5,6 +5,7 @@
 // lets the child self-rate (Got it / Almost / Not yet), and applies SM-2.
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/store/app-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { useSound } from '@/hooks/use-sound'
@@ -30,6 +31,7 @@ export function FlashcardLearnScreen() {
   const deckId = useAppStore((s) => s.selectedDeckId)
   const sfx = useSound()
   const { toast } = useToast()
+  const qc = useQueryClient()
 
   const [cards, setCards] = useState<CardInfo[]>([])
   const [idx, setIdx] = useState(0)
@@ -114,6 +116,13 @@ export function FlashcardLearnScreen() {
       if (data.coinsEarned > 0) {
         toast({ title: `+${data.coinsEarned} coins!` })
       }
+      // Invalidate all relevant caches so the UI updates everywhere
+      qc.invalidateQueries({ queryKey: ['decks'] })
+      qc.invalidateQueries({ queryKey: ['daily-multi'] })
+      qc.invalidateQueries({ queryKey: ['me'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['badges'] })
+      qc.invalidateQueries({ queryKey: ['parent-dashboard'] })
     } catch {
       setDone(true)
     }
