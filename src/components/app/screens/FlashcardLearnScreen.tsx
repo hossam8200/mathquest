@@ -72,14 +72,20 @@ export function FlashcardLearnScreen() {
   async function rate(rating: 'again' | 'hard' | 'good' | 'easy', wasCorrect: boolean) {
     if (!current) return
     sfx(wasCorrect ? 'correct' : 'wrong')
-    // Submit review
+    // Submit review — show error if it fails (don't swallow silently)
     try {
-      await fetch('/api/decks/review', {
+      const r = await fetch('/api/decks/review', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardId: current.id, rating, wasCorrect }),
       })
-    } catch {
-      // best-effort
+      if (!r.ok) {
+        console.error('Review API failed:', r.status)
+      }
+      // Invalidate deck cache after each review so counts update in real-time
+      qc.invalidateQueries({ queryKey: ['decks'] })
+      qc.invalidateQueries({ queryKey: ['daily-multi'] })
+    } catch (e) {
+      console.error('Review fetch error:', e)
     }
 
     const wasNew = current.status === 'new'
