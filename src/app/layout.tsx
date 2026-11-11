@@ -11,11 +11,23 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "MathQuest — Math Adventure for Kids 8-16",
+  metadataBase: new URL('https://mathquest-kids.vercel.app'),
+  title: {
+    default: "MathQuest — Math Adventure for Kids 8-16",
+    template: "%s · MathQuest",
+  },
   description: "A fun, safe math practice app for kids aged 8 to 16. 150 levels, smart flashcards, character marketplace, and more. No ads, no chat, no personal data.",
-  keywords: ["math", "kids", "education", "flashcards", "game", "MathQuest", "addition", "subtraction", "multiplication", "division"],
+  keywords: ["math", "kids", "education", "flashcards", "game", "MathQuest", "addition", "subtraction", "multiplication", "division", "arabic", "math game"],
   authors: [{ name: "MathQuest" }],
+  creator: "MathQuest",
+  publisher: "MathQuest",
+  applicationName: "MathQuest",
+  category: "education",
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+    languages: { en: "/", ar: "/?lang=ar" },
+  },
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
@@ -30,10 +42,32 @@ export const metadata: Metadata = {
     title: "MathQuest",
   },
   openGraph: {
-    title: "MathQuest — Math Adventure for Kids",
-    description: "The math adventure kids ages 8–16 actually love. 150 levels, flashcards, characters!",
+    title: "MathQuest — The Math Adventure Kids Love",
+    description: "150 levels, smart flashcards, 22+ characters. The math app kids ages 8–16 actually ask to play. No ads, no chat, no personal data.",
     type: "website",
-    images: [{ url: "/guide/06-gameplay.png" }],
+    locale: "en_US",
+    alternateLocale: ["ar_AR"],
+    siteName: "MathQuest",
+    url: "/",
+    images: [
+      {
+        url: "/guide/06-gameplay.png",
+        width: 1200,
+        height: 630,
+        alt: "MathQuest gameplay screenshot",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MathQuest — Math Adventure for Kids 8-16",
+    description: "150 levels, smart flashcards, 22+ characters. The math app kids actually love.",
+    images: ["/guide/06-gameplay.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
 };
 
