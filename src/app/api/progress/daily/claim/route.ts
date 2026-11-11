@@ -39,7 +39,10 @@ export async function POST(req: Request) {
   let progress = 0
   const targets: Record<string, number> = { cards: 20, questions: 25, levels: 3 }
   if (type === 'cards') {
-    progress = await db.cardProgress.count({ where: { userId: user.id, lastReviewed: { gte: todayStart } } })
+    // Count flashcard reviews + match game pairs
+    const cardReviews = await db.cardProgress.count({ where: { userId: user.id, lastReviewed: { gte: todayStart } } })
+    const matchPairs = await db.matchScore.aggregate({ where: { userId: user.id, createdAt: { gte: todayStart } }, _sum: { pairs: true } })
+    progress = cardReviews + (matchPairs._sum.pairs ?? 0)
   } else if (type === 'questions') {
     progress = await db.questionResult.count({ where: { userId: user.id, isCorrect: true, round: { createdAt: { gte: todayStart } } } })
   } else if (type === 'levels') {

@@ -23,12 +23,17 @@ export async function GET() {
   await getOrCreateTodayChallenge()
 
   // Compute progress for each challenge type from today's activity
-  // 1. Cards reviewed today
+  // 1. Cards reviewed today (flashcard reviews + match game pairs)
   const todayCardReviews = await db.cardProgress.count({
     where: { userId: user.id, lastReviewed: { gte: todayStart } },
   })
+  // Also count match game pairs completed today (spec: "Match rounds count toward daily challenge")
+  const todayMatchPairs = await db.matchScore.aggregate({
+    where: { userId: user.id, createdAt: { gte: todayStart } },
+    _sum: { pairs: true },
+  })
 
-  // 2. Correct answers today
+  // 2. Correct answers today (from level questions + match game correct pairs)
   const todayCorrect = await db.questionResult.count({
     where: { userId: user.id, isCorrect: true, round: { createdAt: { gte: todayStart } } },
   })
@@ -41,7 +46,7 @@ export async function GET() {
   })
 
   const progressMap: Record<string, number> = {
-    cards: todayCardReviews,
+    cards: todayCardReviews + (todayMatchPairs._sum.pairs ?? 0),
     questions: todayCorrect,
     levels: todayPassed.length,
   }
