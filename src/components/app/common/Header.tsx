@@ -12,6 +12,7 @@ import { Coins, Flame, Volume2, VolumeX, Moon, Sun, LogOut, Settings as Settings
 import { useQuery } from '@tanstack/react-query'
 import { t } from '@/lib/i18n'
 import { kidAvatar, avatarUrl, styleForRarity } from '@/lib/dicebear'
+import { StreakFlame } from './GUIEffects'
 import type { CharacterInfo } from '@/types'
 
 export function Header() {
@@ -78,7 +79,7 @@ export function Header() {
           alt={user.nickname}
           width={28}
           height={28}
-          className="rounded-full ring-2 ring-primary/30 md:h-8 md:w-8"
+          className="mq-idle rounded-full ring-2 ring-primary/30 md:h-8 md:w-8"
           loading="lazy"
         />
       </button>
@@ -96,10 +97,9 @@ export function Header() {
           <span className="hidden md:inline">{lang === 'ar' ? 'الدليل' : 'Guide'}</span>
         </Button>
 
-        {/* Streak — hidden on mobile */}
+        {/* Streak — animated flame, hidden on mobile */}
         <div className="hidden md:flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300 md:px-2.5 md:py-1 md:text-sm">
-          <Flame className="h-3 w-3 md:h-4 md:w-4" />
-          {user.loginStreak}
+          <StreakFlame streak={user.loginStreak} />
         </div>
 
         {/* Coins — compact on mobile */}

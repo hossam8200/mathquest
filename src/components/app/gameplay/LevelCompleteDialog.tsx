@@ -12,6 +12,7 @@ import { useSound } from '@/hooks/use-sound'
 import { t } from '@/lib/i18n'
 import { Star, Coins, Zap, RotateCcw, Map as MapIcon } from 'lucide-react'
 import { Confetti } from './Confetti'
+import { CoinShower } from '../common/GUIEffects'
 import { cn } from '@/lib/utils'
 
 export interface LevelCompleteData {
@@ -52,10 +53,13 @@ export function LevelCompleteDialog({
     }
   }, [data, refresh, sfx])
 
+  const coinTrigger = data?.coinsEarned ?? 0
+
   return (
     <Dialog open={!!data} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-md p-0 overflow-hidden" onPointerDownOutside={(e) => e.preventDefault()}>
         {data?.passed && <Confetti key={`confetti-${data.percent}-${Date.now()}`} count={data.stars === 3 ? 50 : 25} />}
+        <CoinShower trigger={coinTrigger} />
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">
             {data?.passed ? (lang === 'ar' ? 'أحسنت!' : 'Level complete!') : (lang === 'ar' ? 'حاول مجددًا' : 'Keep trying!')}
@@ -73,7 +77,7 @@ export function LevelCompleteDialog({
                 <Star
                   key={s}
                   className={cn(
-                    'h-12 w-12 transition',
+                    'mq-glow-star h-12 w-12 transition',
                     data.stars >= s ? 'fill-amber-400 text-amber-400 mq-pop' : 'fill-none text-muted-foreground/40'
                   )}
                   style={{ animationDelay: `${s * 0.15}s` }}

@@ -21,6 +21,7 @@ import { Mascot } from '../gameplay/Mascot'
 import { Coins, Flame, Zap, Map as MapIcon, BookOpen, Lock, Star, Gift } from 'lucide-react'
 import type { Operation, ProgressStats } from '@/types'
 import { kidAvatar, questGiverAvatar, avatarUrl, styleForRarity } from '@/lib/dicebear'
+import { ProgressRing } from '../common/GUIEffects'
 import { cn } from '@/lib/utils'
 
 const OPS: { key: Operation; emoji: string; color: string; labelKey: DictKey }[] = [
@@ -241,13 +242,16 @@ export function HomeScreen() {
                 {lang === 'ar' ? `اليوم: ${Math.min(challenges.find(c => c.type === 'cards')?.progress ?? 0, user.dailyCardGoal)}/${user.dailyCardGoal} بطاقة` : `Today: ${Math.min(challenges.find(c => c.type === 'cards')?.progress ?? 0, user.dailyCardGoal)}/${user.dailyCardGoal} cards`}
               </p>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-black">
-                {user.dailyCardGoal > 0 ? Math.round(Math.min((challenges.find(c => c.type === 'cards')?.progress ?? 0) / user.dailyCardGoal, 1) * 100) : 0}%
-              </div>
+            <div className="bg-white/20 rounded-full p-1">
+              <ProgressRing
+                percent={user.dailyCardGoal > 0 ? Math.min((challenges.find(c => c.type === 'cards')?.progress ?? 0) / user.dailyCardGoal * 100, 100) : 0}
+                size={56}
+                stroke={4}
+                color="white"
+                label={`${user.dailyCardGoal > 0 ? Math.round(Math.min((challenges.find(c => c.type === 'cards')?.progress ?? 0) / user.dailyCardGoal, 1) * 100) : 0}%`}
+              />
             </div>
           </div>
-          <Progress value={user.dailyCardGoal > 0 ? Math.min((challenges.find(c => c.type === 'cards')?.progress ?? 0) / user.dailyCardGoal * 100, 100) : 0} className="mt-2 h-2 bg-white/20 [&>*]:bg-white" />
         </div>
         <CardContent className="flex gap-2 p-3">
           <Button className="flex-1" onClick={() => { sfx('click'); go({ view: 'decks' }) }}>

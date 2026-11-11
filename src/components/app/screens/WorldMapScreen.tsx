@@ -17,6 +17,7 @@ import { Progress } from '@/components/ui/progress'
 import { Lock, Star, Crown, ChevronLeft } from 'lucide-react'
 import type { WorldInfo, LevelInfo } from '@/types'
 import { PreGameModal } from '../gameplay/PreGameModal'
+import { WorldBackground } from '../common/GUIEffects'
 import { cn } from '@/lib/utils'
 
 interface WorldSummary extends WorldInfo {
@@ -108,6 +109,7 @@ export function WorldMapScreen() {
   const world = worldsQ.data?.worlds.find((w) => w.id === selectedWorldId)
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-10">
+      <WorldBackground world={world?.key} />
       <Button
         variant="ghost"
         size="sm"

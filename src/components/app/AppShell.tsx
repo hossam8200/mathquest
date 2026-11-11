@@ -28,16 +28,19 @@ import { WordProblemsScreen } from './screens/WordProblemsScreen'
 import { StepSolverScreen } from './screens/StepSolverScreen'
 import { AnnouncementBanner } from './common/AnnouncementBanner'
 import { BottomNav } from './common/BottomNav'
+import { QuickPlayFAB, XPBar, useSeason, ScreenTransition } from './common/GUIEffects'
 import type { ViewKey } from '@/types'
 
 export function AppShell() {
   const { user, isLoading } = useCurrentUser()
   const view = useAppStore((s) => s.view)
   const lang = useSettingsStore((s) => s.lang)
+  const season = useSeason()
 
-  // Apply age-band attribute so globals.css can scale buttons.
-  if (typeof document !== 'undefined' && user?.ageBand) {
-    document.documentElement.setAttribute('data-age-band', user.ageBand)
+  // Apply age-band + seasonal attribute
+  if (typeof document !== 'undefined') {
+    if (user?.ageBand) document.documentElement.setAttribute('data-age-band', user.ageBand)
+    document.documentElement.setAttribute('data-season', season)
   }
 
   if (isLoading) {
@@ -60,16 +63,20 @@ export function AppShell() {
   // (useSettingsStore hydrateFromUser is called in HomeScreen mount to avoid SSR mismatch.)
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="mq-seasonal flex min-h-screen flex-col bg-background">
       <AnnouncementBanner />
       <Header />
+      <XPBar />
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 overflow-x-hidden pb-16 md:pb-0">
-          {renderView(view)}
+          <ScreenTransition view={view}>
+            {renderView(view)}
+          </ScreenTransition>
         </main>
       </div>
       <BottomNav />
+      <QuickPlayFAB />
     </div>
   )
 }
